@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "403335323247",
+    "project_id": "koolkwiz",
+    "storage_bucket": "koolkwiz.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:403335323247:android:9f70b244dae22bcf2a779a",
+        "android_client_info": {
+          "package_name": "com.example.koolkwiz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "403335323247-vsmb915n2fafhhja5qmf6idisq9iilso.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCSXJYLfdBSqWu9KoQt0v8-PND7tPa_XpM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "403335323247-vsmb915n2fafhhja5qmf6idisq9iilso.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
