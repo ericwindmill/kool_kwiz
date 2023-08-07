@@ -5,7 +5,15 @@ class Player {
   final String id;
   final String? name;
   int currentScore;
-  final LeaderboardStats leaderboardStats;
+  LeaderboardStats leaderboardStats;
+
+  void updateLeaderboardStats() {
+    leaderboardStats.cumulativeScore += currentScore;
+    if (currentScore > leaderboardStats.highestScore) {
+      leaderboardStats.highestScore = currentScore;
+      leaderboardStats.date = DateTime.now();
+    }
+  }
 
   Player({
     required this.id,

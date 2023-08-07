@@ -147,9 +147,14 @@ class FirebaseService {
     });
   }
 
-  static void incrementScore(Player player) {
+  static void incrementScore(Player player) async {
     player.currentScore++;
     final json = player.toJson();
     FirebaseFirestore.instance.doc('users/${player.id}').update(json);
+  }
+
+  static Future<void> completeQuiz(Player player) async {
+    player.updateLeaderboardStats();
+    FirebaseFirestore.instance.doc('users/${player.id}').update(player.toJson());
   }
 }

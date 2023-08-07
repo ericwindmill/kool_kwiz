@@ -13,18 +13,29 @@ class AppState extends ChangeNotifier {
   int currentQuestionIdx = 0;
   Question get currentQuestion => quiz.questions[currentQuestionIdx];
 
-  bool submitAnswer(String selection) {
+  void submitAnswer(String selection) {
     var isCorrect = selection == currentQuestion.correctAnswer;
     if (isCorrect) FirebaseService.incrementScore(player);
-    return isCorrect;
   }
 
   void nextQuestion() {
     if (currentQuestionIdx + 1 == quiz.length) {
       quizComplete = true;
+      completeQuiz();
     } else {
       currentQuestionIdx++;
     }
     notifyListeners();
+  }
+
+  completeQuiz() async {
+    await FirebaseService.completeQuiz(player);
+  }
+
+  resetQuiz() async {
+    // reset app state
+    // set player score to 0
+    // fetch new quiz
+    //
   }
 }
