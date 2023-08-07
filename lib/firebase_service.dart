@@ -15,6 +15,22 @@ class FirebaseService {
     });
   }
 
+  // All users that have completed at least one quiz
+  static Stream<List<Player>> leaderboard() {
+    return FirebaseFirestore.instance
+        .collection('users')
+        .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
+        .snapshots()
+        .map((event) {
+      var players = event.docs
+          .map((QueryDocumentSnapshot<Map<String, dynamic>> snapshot) {
+        return Player.fromJson(snapshot.data());
+      });
+
+      return players.toList();
+    });
+  }
+
   static Future<Player> createUser(UserCredential userCredential) async {
     final existingPlayerDoc = await FirebaseFirestore.instance
         .doc('users/${userCredential.user!.uid}')
