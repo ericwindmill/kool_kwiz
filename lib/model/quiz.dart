@@ -1,10 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:koolkwiz/model/question.dart';
 
 class Quiz {
   Quiz({
     required this.questions,
-    this.length = 10,
+    this.length = 3,
   });
 
   final List<Question> questions;

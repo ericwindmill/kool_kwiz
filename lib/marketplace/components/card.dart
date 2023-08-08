@@ -35,7 +35,9 @@ class Seasons extends StatelessWidget {
 }
 
 class SmallCard extends StatelessWidget {
-  const SmallCard({super.key});
+  const SmallCard({super.key, required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -67,8 +69,7 @@ class SmallCard extends StatelessWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(20),
-                  child:
-                      Image.asset('assets/images/apple.jpg', fit: BoxFit.cover),
+                  child: child,
                 ),
               ),
               Expanded(
@@ -91,11 +92,6 @@ class SmallCard extends StatelessWidget {
                         ],
                       ),
                       SizedBox(height: 8),
-                      Text(
-                          style: Marketplace.paragraph,
-                          maxLines: 3,
-                          overflow: TextOverflow.ellipsis,
-                          'Green or red, they\'re generally round and tasty.'),
                     ],
                   ),
                 ),
@@ -109,7 +105,9 @@ class SmallCard extends StatelessWidget {
 }
 
 class BigCard extends StatelessWidget {
-  const BigCard({super.key});
+  const BigCard({super.key, required this.child});
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -126,52 +124,9 @@ class BigCard extends StatelessWidget {
         ),
         child: Padding(
           padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Padding(
-                padding: EdgeInsets.all(6),
-                child: Container(
-                  width: MediaQuery.of(context).size.width,
-                  height: 190,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: Marketplace.theme.colorScheme.onSecondary,
-                      width: 2,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.asset('assets/images/apple.jpg',
-                        fit: BoxFit.cover),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Row(
-                  children: [
-                    Text(
-                      'Apples',
-                      style: Marketplace.heading2,
-                    ),
-                    Spacer(),
-                    Seasons(),
-                  ],
-                ),
-              ),
-              SizedBox(height: 8),
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Text(
-                  style: Marketplace.subheading1,
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  'Green or red, they\'re generally round and tasty.',
-                ),
-              ),
-              SizedBox(height: 16),
-            ],
+          child: SizedBox(
+            width: MediaQuery.of(context).size.width,
+            child: child,
           ),
         ),
       ),

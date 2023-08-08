@@ -16,18 +16,21 @@ class FirebaseService {
   }
 
   // All users that have completed at least one quiz
-  static Stream<List<Player>> leaderboard() {
+  static Stream<List<Player>> leaderboardStream() {
     return FirebaseFirestore.instance
         .collection('users')
         .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
+        .limit(30)
         .snapshots()
         .map((event) {
       var players = event.docs
           .map((QueryDocumentSnapshot<Map<String, dynamic>> snapshot) {
         return Player.fromJson(snapshot.data());
-      });
+      }).toList();
+      players.sort((a, b) => b.leaderboardStats.cumulativeScore
+          .compareTo(a.leaderboardStats.cumulativeScore));
 
-      return players.toList();
+      return players;
     });
   }
 
@@ -153,8 +156,16 @@ class FirebaseService {
     FirebaseFirestore.instance.doc('users/${player.id}').update(json);
   }
 
+  static Future<void> resetCurrentScore(Player player) async {
+    player.currentScore = 0;
+    final json = player.toJson();
+    FirebaseFirestore.instance.doc('users/${player.id}').update(json);
+  }
+
   static Future<void> completeQuiz(Player player) async {
     player.updateLeaderboardStats();
-    FirebaseFirestore.instance.doc('users/${player.id}').update(player.toJson());
+    FirebaseFirestore.instance
+        .doc('users/${player.id}')
+        .update(player.toJson());
   }
 }

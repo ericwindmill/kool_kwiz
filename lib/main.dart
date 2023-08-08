@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'app_state.dart';
 import 'model/model.dart';
-import 'widgets/splash_screen.dart';
+import 'screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -63,6 +63,10 @@ class _AuthGuardState extends State<AuthGuard> {
                 StreamProvider<Player>(
                   create: (_) => FirebaseService.playerStream(_player!),
                   initialData: _player!,
+                ),
+                StreamProvider<List<Player>>(
+                  create: (_) => FirebaseService.leaderboardStream(),
+                  initialData: [],
                 )
               ],
               child: AppShell(),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:koolkwiz/marketplace/marketplace.dart';
+import 'package:provider/provider.dart';
+
+import '../app_state.dart';
 
 class StartQuizScreen extends StatelessWidget {
   final VoidCallback onStartQuiz;
@@ -7,6 +10,7 @@ class StartQuizScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -18,10 +22,11 @@ class StartQuizScreen extends StatelessWidget {
         SizedBox(height: Marketplace.spacing4),
         ShowCircles(),
         SizedBox(height: Marketplace.spacing3),
-        MarketButton(
-          onPressed: onStartQuiz,
-          text: 'Start Quiz!',
-        )
+        if (state.quizReady)
+          MarketButton(
+            onPressed: onStartQuiz,
+            text: 'Start Quiz!',
+          )
       ],
     );
   }

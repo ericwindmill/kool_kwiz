@@ -7,9 +7,10 @@ class AppState extends ChangeNotifier {
   AppState({required this.player, required this.quiz});
 
   final Player player;
-  final Quiz quiz;
+  Quiz quiz;
 
   bool quizComplete = false;
+  bool quizReady = true;
   int currentQuestionIdx = 0;
   Question get currentQuestion => quiz.questions[currentQuestionIdx];
 
@@ -30,12 +31,17 @@ class AppState extends ChangeNotifier {
 
   completeQuiz() async {
     await FirebaseService.completeQuiz(player);
+    notifyListeners();
   }
 
   resetQuiz() async {
-    // reset app state
-    // set player score to 0
-    // fetch new quiz
-    //
+    quizReady = false;
+    notifyListeners();
+    currentQuestionIdx = 0;
+    quizComplete = false;
+    await FirebaseService.resetCurrentScore(player);
+    quiz = await FirebaseService.createQuiz();
+    quizReady = true;
+    notifyListeners();
   }
 }

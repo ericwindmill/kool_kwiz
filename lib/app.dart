@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:koolkwiz/widgets/start_quiz_screen.dart';
+import 'package:koolkwiz/screens/leaderboard_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'app_state.dart';
 import 'marketplace/marketplace.dart';
 import 'model/model.dart';
-import 'widgets/quiz_screen.dart';
+import 'screens/quiz_screen.dart';
+import 'screens/start_quiz_screen.dart';
 
 // This Widget is basically the router.
 class AppShell extends StatefulWidget {
@@ -54,9 +55,12 @@ class _AppShellState extends State<AppShell> {
 
             // Show the Leaderboard screen
             if (state.quizComplete) {
-              return Center(
-                child: Text('Quiz Complete! (todo: leaderboard)'),
-              );
+              return LeaderboardScreen(onReset: () {
+                state.resetQuiz();
+                setState(() {
+                  _hasStartedQuiz = false;
+                });
+              });
             }
 
             return QuizScreen();
