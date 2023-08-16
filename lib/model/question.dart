@@ -1,52 +1,20 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-class Question {
+// multiple returns
+// future.wait with records for Player and Quiz FutureBuilder
+// separate serialization, so the code is more maintainable if you have multiple backends
+// questions with multiple correct answers
+// switch over a combination of answers?
+// button highlight / selected exhaustiveness checking
+// Question and Answer split out
+
+sealed class Question {
   Question({
     required this.id,
     required this.category,
-    required this.possibleAnswers,
-    required this.correctAnswer,
-    this.results = const {'A': 0, 'B': 0, 'C': 0, 'D': 0},
   });
-
   String id;
   String category;
-  Map<String, String> possibleAnswers;
-  String correctAnswer;
-  Map<String, int> results;
-
-  factory Question.fromFirestore(
-    DocumentSnapshot<Map<String, dynamic>> snapshot,
-  ) {
-    final data = snapshot.data()!;
-    return Question(
-      id: snapshot.id,
-      category: data['category'],
-      possibleAnswers: {
-        'A': data['possibleAnswers']['A'],
-        'B': data['possibleAnswers']['B'],
-        'C': data['possibleAnswers']['C'],
-        'D': data['possibleAnswers']['D'],
-      },
-      correctAnswer: data['correctAnswer'],
-      results: {
-        'A': data['results']['A'],
-        'B': data['results']['B'],
-        'C': data['results']['C'],
-        'D': data['results']['D'],
-      },
-    );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'id': id,
-      'category': category,
-      'possibleAnswers': possibleAnswers,
-      'correctAnswer': correctAnswer,
-      'results': results,
-    };
-  }
 }
 
 class TextQuestion extends Question {
@@ -54,9 +22,6 @@ class TextQuestion extends Question {
     required this.questionBody,
     required super.id,
     required super.category,
-    required super.possibleAnswers,
-    required super.correctAnswer,
-    required super.results,
   });
 
   final String questionBody;
@@ -69,43 +34,24 @@ class TextQuestion extends Question {
       id: snapshot.id,
       questionBody: data['questionBody'],
       category: data['category'],
-      possibleAnswers: {
-        'A': data['possibleAnswers']['A'],
-        'B': data['possibleAnswers']['B'],
-        'C': data['possibleAnswers']['C'],
-        'D': data['possibleAnswers']['D'],
-      },
-      correctAnswer: data['correctAnswer'],
-      results: {
-        'A': data['results']['A'],
-        'B': data['results']['B'],
-        'C': data['results']['C'],
-        'D': data['results']['D'],
-      },
     );
   }
 
-  @override
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,
       'questionBody': questionBody,
       'category': category,
-      'possibleAnswers': possibleAnswers,
-      'correctAnswer': correctAnswer,
-      'results': results,
     };
   }
 }
 
 class ImageQuestion extends Question {
+  //super class
   ImageQuestion({
     required this.imagePath,
     required super.id,
     required super.category,
-    required super.possibleAnswers,
-    required super.correctAnswer,
-    required super.results,
   });
 
   String imagePath;
@@ -118,31 +64,14 @@ class ImageQuestion extends Question {
       id: snapshot.id,
       imagePath: data['imagePath'],
       category: data['category'],
-      possibleAnswers: {
-        'A': data['possibleAnswers']['A'],
-        'B': data['possibleAnswers']['B'],
-        'C': data['possibleAnswers']['C'],
-        'D': data['possibleAnswers']['D'],
-      },
-      correctAnswer: data['correctAnswer'],
-      results: {
-        'A': data['results']['A'],
-        'B': data['results']['B'],
-        'C': data['results']['C'],
-        'D': data['results']['D'],
-      },
     );
   }
 
-  @override
   Map<String, dynamic> toFirestore() {
     return {
       'id': id,
       'imagePath': imagePath,
       'category': category,
-      'possibleAnswers': possibleAnswers,
-      'correctAnswer': correctAnswer,
-      'results': results,
     };
   }
 }

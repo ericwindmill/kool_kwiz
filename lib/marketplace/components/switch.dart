@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:koolkwiz/marketplace/marketplace.dart';
 
+typedef BoolSelectionCallback = void Function(bool);
+
 class MarketSwitch extends StatefulWidget {
-  const MarketSwitch({super.key});
+  const MarketSwitch({super.key, required this.onTap});
+
+  final BoolSelectionCallback onTap;
 
   @override
   State<MarketSwitch> createState() => _MarketSwitchState();
@@ -19,6 +23,7 @@ class _MarketSwitchState extends State<MarketSwitch> {
         width: 48,
         child: GestureDetector(
           onTap: () {
+            widget.onTap;
             setState(() {
               val = !val;
             });

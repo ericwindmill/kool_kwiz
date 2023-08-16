@@ -9,7 +9,7 @@ import 'package:provider/provider.dart';
 import 'app.dart';
 import 'app_state.dart';
 import 'model/model.dart';
-import 'screens/splash_screen.dart';
+import 'views/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,9 +35,15 @@ class _AuthGuardState extends State<AuthGuard> {
   }
 
   void loadApp() async {
-    final userCredential = await FirebaseAuth.instance.signInAnonymously();
-    _player = await FirebaseService.createUser(userCredential);
-    _quiz = await FirebaseService.createQuiz();
+    try {
+      final userCredential = await FirebaseAuth.instance.signInAnonymously();
+      _player = await FirebaseService.createUser(userCredential);
+      _quiz = await FirebaseService.createQuiz();
+    } on FormatException catch (e) {
+      print('Format Exception! \n $e');
+    } catch (e) {
+      print('An unknown exception occurred! \n $e');
+    }
     setState(() {
       appLoaded = true;
     });

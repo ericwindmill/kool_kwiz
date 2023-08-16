@@ -12,14 +12,15 @@ abstract class Marketplace {
         .copyWith()
         .apply(bodyColor: Color(0xff000000), displayColor: Color(0xff000000)),
     colorScheme: ColorScheme.light(
-        primary: Color(0xffA2E3F6),
-        secondary: Color(0xffFFABC7),
-        tertiary: Color(0xffDE7A60),
-        scrim: Color(0xff4FAD85),
-        background: Color(0xffFDF7F0),
-        onSecondary: Color(0xff000000),
-        shadow: Color(0xffAEAEAE),
-        onPrimary: Color(0xffFFFFFF)),
+      primary: Color(0xffA2E3F6),
+      secondary: Color(0xffFFABC7),
+      tertiary: Color(0xffDE7A60),
+      scrim: Color(0xff4FAD85),
+      background: Color(0xffFDF7F0),
+      onSecondary: Color(0xff000000),
+      shadow: Color(0xffAEAEAE),
+      onPrimary: Color(0xffFFFFFF),
+    ),
     useMaterial3: true,
     navigationBarTheme: NavigationBarThemeData(
       indicatorColor: Color(0xffA2E3F6),
@@ -106,8 +107,12 @@ abstract class Marketplace {
 
   static Color get cardBackground => Colors.white;
   static Color get appBackground => Color(0xffFDF7F0);
+
+  // Question answer button colors
   static Color get buttonHighlight => Color(0xffFFABC7);
   static Color get wrongChoiceColor => Color(0xffff708c);
   static Color get correctChoiceColor => Color(0xff4FAD85);
+  static Color get inactiveButton => Color(0xff9d9d9d);
+
   static double get cornerRadius => 24;
 }

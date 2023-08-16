@@ -83,66 +83,122 @@ class FirebaseService {
     return player;
   }
 
-  // The logic for this shouldn't be in one long method. But, it might help
-  // us approach a refactoring example holistically.
-  // TODO: split logic depending on the refactoring examples for the talk
   static Future<Quiz> createQuiz() async {
-    final questions = <Question>[];
+    final questions = <(Question, Answer)>[];
     return FirebaseFirestore.instance
         .collection('questions')
-        // Get ALL the questions
         .get()
-        .then((QuerySnapshot<Map<String, dynamic>> value) {
+        .then((QuerySnapshot value) {
       for (var doc in value.docs) {
         final data = doc.data();
-        final questionType = data['type'];
-        if (questionType == 'textQuestion') {
-          final question = TextQuestion(
-            id: doc.reference.id,
-            questionBody: data['questionBody'],
-            category: doc['category'],
-            possibleAnswers: {
-              'A': doc['possibleAnswers']['A'],
-              'B': doc['possibleAnswers']['B'],
-              'C': doc['possibleAnswers']['C'],
-              'D': doc['possibleAnswers']['D'],
-            },
-            correctAnswer: data['correctAnswer'],
-            results: {
-              'A': doc['results']['A'],
-              'B': doc['results']['B'],
-              'C': doc['results']['C'],
-              'D': doc['results']['D'],
-            },
-          );
-          questions.add(question);
-        } else if (questionType == 'imageQuestion') {
-          final String id = doc.reference.id;
-          final question = ImageQuestion(
-            id: id,
-            imagePath: data['imagePath'],
-            category: doc['category'],
-            possibleAnswers: {
-              'A': doc['possibleAnswers']['A'],
-              'B': doc['possibleAnswers']['B'],
-              'C': doc['possibleAnswers']['C'],
-              'D': doc['possibleAnswers']['D'],
-            },
-            correctAnswer: data['correctAnswer'],
-            results: {
-              'A': doc['results']['A'],
-              'B': doc['results']['B'],
-              'C': doc['results']['C'],
-              'D': doc['results']['D'],
-            },
-          );
-          questions.add(question);
+        if (data is Map<String, Object?> &&
+            data.containsKey('type') &&
+            data.containsKey('category') &&
+            data['answer'] is Map<String, Object?>) {
+          late Question question;
+          final questionType = data['type'];
+
+          // Validate that the question type is correct
+          if (data['type'] != 'textQuestion' &&
+              data['type'] != 'imageQuestion') {
+            throw FormatException(
+                'Question type must be imageQuestion or textQuestion. Got ${data['type']}');
+          }
+
+          // Validate that the question types have the correct properties
+          if (data['type'] == 'textQuestion' &&
+              !data.containsKey('questionBody')) {
+            throw FormatException(
+                'Questions of type textQuestion must contain questionBody');
+          } else if (data['type'] == 'imageQuestion' &&
+              !data.containsKey('imagePath')) {
+            throw FormatException(
+                'Question of type imageQuestion must contain an imagePath');
+          }
+
+          // Build Question
+          if (questionType == 'textQuestion') {
+            question = TextQuestion(
+              id: doc.reference.id,
+              questionBody: data['questionBody'] as String,
+              category: doc['category'],
+            );
+          } else if (questionType == 'imageQuestion') {
+            if (data['imagePath'] is! String) {
+              throw FormatException(
+                  'imagePath must be exist and must be a String!');
+            }
+
+            question = ImageQuestion(
+              id: doc.reference.id,
+              imagePath: data['imagePath'] as String,
+              category: doc['category'],
+            );
+          }
+
+          // Validate that answer data exists
+          final answerJson = data['answer'];
+          if (answerJson is! Map<String, dynamic>) {
+            throw FormatException(
+                'Answer data must exist, and must be a Map. Got $answerJson');
+          }
+
+          // Build Answer
+          final answerData = data['answer'] as Map<String, Object?>;
+          final answerType = answerData['type'];
+          late Answer answer;
+          if (answerType != 'openTextAnswer' &&
+              answerType != 'multipleChoiceAnswer' &&
+              answerType != 'booleanAnswer') {
+            throw FormatException(
+                'Answer type must be one of: openTextAnswer, multipleChoiceAnswer, booleanAnswer');
+          }
+
+          if (!answerData.containsKey('correctAnswer')) {
+            throw FormatException('Answer.correctAnswer must exist.');
+          }
+
+          // create OpenTextAnswer
+          if (answerType == 'openTextAnswer') {
+            if (answerData['correctAnswer'] is! String) {
+              throw FormatException(
+                  'For openTextAnswers, the answerData must be a String. Got ${answerData['correctAnswer']}');
+            }
+            answer = OpenTextAnswer(
+                correctAnswer: answerData['correctAnswer'] as String);
+
+            // Create multipleChoiceAnswer
+          } else if (answerType == 'multipleChoiceAnswer') {
+            if (!answerData.containsKey('answerOptions') ||
+                answerData['answerOptions'] is! List) {
+              throw FormatException(
+                  'answerOptions must exist in a multipleChoiceAnswer, and it must be a List of Strings. Got ${answerData['answerOptions']}, type: ${answerData['answerOptions'].runtimeType}');
+            }
+            if (answerData['correctAnswer'] is! String) {
+              throw FormatException(
+                  'For multipleChoiceAnswers, the answerData must be a String. Got ${answerData['correctAnswer']}');
+            }
+            final answerOptionsData =
+                (answerData['answerOptions'] as List).cast<String>();
+
+            answer = MultipleChoiceAnswer(
+              correctAnswer: answerData['correctAnswer'] as String,
+              answerOptions: answerOptionsData,
+            );
+          } else if (answerType == 'booleanAnswer') {
+            if (answerData['correctAnswer'] is! bool) {
+              throw FormatException(
+                  'For booleanAnswers, the answerData must be a boolean. Got ${answerData['correctAnswer']}');
+            }
+            answer = BooleanAnswer(
+                correctAnswer: answerData['correctAnswer'] as String);
+          }
+          questions.add((question, answer));
         }
       }
 
-      final quiz = Quiz(questions: []);
-
-      // Filter the questions to get random questions
+      final quiz = Quiz(questionList: []);
+      // Make sure every quiz contains a random assortment of 10 questions.
       questions.shuffle();
       final questionsForQuizLength = questions.take(quiz.length).toList();
       quiz.addQuestions(questionsForQuizLength);
