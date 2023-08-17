@@ -1,5 +1,6 @@
 import 'package:animations/animations.dart';
 import 'package:flutter/material.dart';
+import 'package:koolkwiz/marketplace/components/expandable_column.dart';
 import 'package:provider/provider.dart';
 
 import '../app_state.dart';
@@ -61,8 +62,9 @@ class _QuizScreenState extends State<QuizScreen> {
           appState: state,
         );
 
-        return SingleChildScrollView(
-          child: Column(
+        return Padding(
+          padding: EdgeInsets.all(Marketplace.spacing4),
+          child: ScrollColumnExpandable(
             children: [
               PageTransitionSwitcher(
                 duration: Duration(milliseconds: 600),
@@ -78,12 +80,10 @@ class _QuizScreenState extends State<QuizScreen> {
                     child: child,
                   );
                 },
-                child: Padding(
+                child: Container(
                   key: Key(state.currentQuestion.id),
-                  padding: EdgeInsets.symmetric(
-                    vertical: Marketplace.spacing4,
-                  ),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       question,
                       answer,
@@ -91,6 +91,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
               ),
+              SizedBox(height: Marketplace.spacing4),
               MarketButton(
                 text: 'Next Question',
                 onPressed: () => state.nextQuestion(),

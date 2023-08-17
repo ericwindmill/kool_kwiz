@@ -29,39 +29,39 @@ class _MultipleChoiceAnswerViewState extends State<MultipleChoiceAnswerView> {
   // button state before an answer is selected
   bool _isActive = true;
 
+  List<Widget> _buildButtons(AppState state) {
+    final answers = widget.answer.answerOptions;
+    return answers.map((String answerOption) {
+      final bool isCorrectAnswer = widget.answer.correctAnswer == answerOption;
+      final int idx = widget.answer.answerOptions.indexOf(answerOption);
+      final bool isSelected = idx == _selectedButtonIdx;
+
+      return Padding(
+        padding: EdgeInsets.all(Marketplace.spacing8),
+        child: MultipleChoiceAnswerButton(
+          isActive: _isActive,
+          isCorrectAnswer: isCorrectAnswer,
+          isSelected: isSelected,
+          text: '${multipleChoiceAnswerKey[idx]}. $answerOption',
+          onPressed: () {
+            setState(() {
+              _selectedButtonIdx = idx;
+              _isActive = false;
+            });
+            state.validateAnswer(answerOption);
+          },
+        ),
+      );
+    }).toList();
+  }
+
   @override
   Widget build(BuildContext context) {
     var state = context.watch<AppState>();
 
-    return Padding(
-      padding: EdgeInsets.all(Marketplace.spacing2),
-      child: ListView.builder(
-        shrinkWrap: true,
-        itemCount: widget.answer.answerOptions.length,
-        physics: NeverScrollableScrollPhysics(),
-        itemBuilder: (context, idx) {
-          final answerOption = widget.answer.answerOptions.elementAt(idx);
-          final bool isCorrectAnswer =
-              widget.answer.correctAnswer == answerOption;
-          final bool isSelected = idx == _selectedButtonIdx;
-
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: Marketplace.spacing7),
-            child: MultipleChoiceAnswerButton(
-              isActive: _isActive,
-              isCorrectAnswer: isCorrectAnswer,
-              isSelected: isSelected,
-              text: '${multipleChoiceAnswerKey[idx]}. $answerOption',
-              onPressed: () {
-                setState(() {
-                  _selectedButtonIdx = idx;
-                });
-                state.validateAnswer(answerOption);
-              },
-            ),
-          );
-        },
-      ),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: _buildButtons(state),
     );
   }
 }
@@ -84,23 +84,21 @@ class _OpenTextAnswerViewState extends State<OpenTextAnswerView> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
-    return Padding(
-      padding: EdgeInsets.all(Marketplace.spacing2),
-      child: Column(
-        children: [
-          MarketTextField(
-            onChange: (value) {
-              textValue = textValue;
-            },
-          ),
-          MarketButton(
-            text: 'Submit Answer',
-            onPressed: () {
-              state.validateAnswer(textValue ?? '');
-            },
-          ),
-        ],
-      ),
+    return Column(
+      children: [
+        MarketTextField(
+          onChange: (value) {
+            textValue = textValue;
+          },
+        ),
+        SizedBox(height: Marketplace.spacing4),
+        MarketButton(
+          text: 'Submit Answer',
+          onPressed: () {
+            state.validateAnswer(textValue ?? '');
+          },
+        ),
+      ],
     );
   }
 }

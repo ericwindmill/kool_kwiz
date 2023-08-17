@@ -39,7 +39,7 @@ class LeaderboardScreen extends StatelessWidget {
             ],
           ),
           SizedBox(height: Marketplace.spacing4),
-          BigCard(
+          MarketCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -54,7 +54,7 @@ class LeaderboardScreen extends StatelessWidget {
           SizedBox(height: Marketplace.spacing4),
           Text('Leaderboard', style: Marketplace.heading1),
           Expanded(
-            child: BigCard(
+            child: MarketCard(
               child: ListView.separated(
                 itemCount: leaderboard.length,
                 itemBuilder: (context, idx) {

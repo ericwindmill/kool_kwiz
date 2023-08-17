@@ -10,24 +10,14 @@ class ImageQuestionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(Marketplace.spacing4),
-      decoration: BoxDecoration(
-        color: Marketplace.cardBackground,
-        border: Border.all(width: Marketplace.lineWidth),
-        borderRadius: BorderRadius.all(
-          Radius.circular(
-            Marketplace.cornerRadius,
+    return MarketCard(
+      child: Column(
+        children: [
+          Image.asset(
+            question.imagePath,
           ),
-        ),
-      ),
-      child: Center(
-        child: Column(
-          children: [
-            Image.asset(question.imagePath),
-            Text('Who is this?'),
-          ],
-        ),
+          Text('Who is this?'),
+        ],
       ),
     );
   }
@@ -43,20 +33,8 @@ class TextQuestionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(Marketplace.spacing4),
-      decoration: BoxDecoration(
-        color: Marketplace.cardBackground,
-        border: Border.all(width: Marketplace.lineWidth),
-        borderRadius: BorderRadius.all(
-          Radius.circular(
-            Marketplace.cornerRadius,
-          ),
-        ),
-      ),
-      child: Center(
-        child: Text('Question: ${question.questionBody}'),
-      ),
+    return MarketCardWithDecoration(
+      child: Text('Question: ${question.questionBody}'),
     );
   }
 }

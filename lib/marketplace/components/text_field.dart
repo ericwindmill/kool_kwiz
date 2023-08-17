@@ -18,18 +18,25 @@ class _MarketTextFieldState extends State<MarketTextField> {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: _controller,
-      onChanged: widget.onChange,
-      decoration: InputDecoration(
-        contentPadding: EdgeInsets.all(Marketplace.spacing4),
-        fillColor: Marketplace.theme.colorScheme.onPrimary,
-        border: OutlineInputBorder(
-          borderSide: BorderSide(
-            color: Marketplace.theme.colorScheme.onSecondary,
-            width: 2,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.all(Radius.circular(25)),
+        color: Marketplace.theme.colorScheme.onPrimary,
+      ),
+      child: TextField(
+        controller: _controller,
+        onChanged: widget.onChange,
+        cursorColor: Colors.black,
+        decoration: InputDecoration(
+          contentPadding: EdgeInsets.all(Marketplace.spacing4),
+          fillColor: Marketplace.theme.colorScheme.onPrimary,
+          border: OutlineInputBorder(
+            borderSide: BorderSide(
+              color: Marketplace.theme.colorScheme.onSecondary,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(25),
           ),
-          borderRadius: BorderRadius.circular(25),
         ),
       ),
     );
