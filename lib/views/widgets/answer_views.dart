@@ -35,7 +35,6 @@ class _MultipleChoiceAnswerViewState extends State<MultipleChoiceAnswerView> {
       final bool isCorrectAnswer = widget.answer.correctAnswer == answerOption;
       final int idx = widget.answer.answerOptions.indexOf(answerOption);
       final bool isSelected = idx == _selectedButtonIdx;
-
       return Padding(
         padding: EdgeInsets.all(Marketplace.spacing8),
         child: MultipleChoiceAnswerButton(

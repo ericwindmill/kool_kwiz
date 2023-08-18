@@ -3,7 +3,7 @@ import 'model.dart';
 class Quiz {
   Quiz({
     required this.questionList,
-    this.length = 3,
+    this.length = 5,
   });
 
   final List<(Question, Answer)> questionList;

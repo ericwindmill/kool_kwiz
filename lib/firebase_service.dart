@@ -150,6 +150,10 @@ class FirebaseService {
 
       final quiz = Quiz(questionList: []);
       // Make sure every quiz contains a random assortment of 10 questions.
+      // This is for testing, remove!!!!
+      questions.removeWhere((element) {
+        return element.$2 is! MultipleChoiceAnswer;
+      });
       questions.shuffle();
       final questionsForQuizLength = questions.take(quiz.length).toList();
       quiz.addQuestions(questionsForQuizLength);

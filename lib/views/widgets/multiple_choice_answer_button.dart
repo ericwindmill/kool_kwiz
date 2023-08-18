@@ -30,7 +30,7 @@ class _MultipleChoiceAnswerButtonState
   final Color hoveredColor =
       Marketplace.theme.colorScheme.primary.withOpacity(.5);
   final Color initialColor = Marketplace.theme.colorScheme.onPrimary;
-  final Color inactiveColor = Marketplace.theme.colorScheme.onPrimary;
+  final Color inactiveColor = Marketplace.inactiveButton;
   final Color correctAnswerColor = Marketplace.correctChoiceColor;
   final Color incorrectAnswerColor = Marketplace.wrongChoiceColor;
   late bool isActive;
@@ -54,7 +54,7 @@ class _MultipleChoiceAnswerButtonState
   tapUp(TapUpDetails e) {
     setState(() {
       isPressed = false;
-      widget.onPressed();
+      if (isActive) widget.onPressed();
     });
   }
 
@@ -71,6 +71,9 @@ class _MultipleChoiceAnswerButtonState
   }
 
   Color get buttonColor {
+    isActive = widget.isActive;
+    isCorrect = widget.isCorrectAnswer;
+    isSelected = widget.isSelected;
     final record = (isActive, isPressed, isHovered, isSelected, isCorrect);
     return switch (record) {
       (true, true, _, _, _) => pressedColor,
