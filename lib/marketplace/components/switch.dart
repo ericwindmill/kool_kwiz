@@ -23,9 +23,9 @@ class _MarketSwitchState extends State<MarketSwitch> {
         width: 48,
         child: GestureDetector(
           onTap: () {
-            widget.onTap;
             setState(() {
               val = !val;
+              widget.onTap(val);
             });
           },
           child: Stack(

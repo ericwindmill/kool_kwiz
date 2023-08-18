@@ -88,7 +88,7 @@ class _OpenTextAnswerViewState extends State<OpenTextAnswerView> {
       children: [
         MarketTextField(
           onChange: (value) {
-            textValue = textValue;
+            textValue = value;
           },
         ),
         SizedBox(height: Marketplace.spacing4),

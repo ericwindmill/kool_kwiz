@@ -25,7 +25,9 @@ class _MarketTextFieldState extends State<MarketTextField> {
       ),
       child: TextField(
         controller: _controller,
-        onChanged: widget.onChange,
+        onChanged: (value) {
+          widget.onChange(value);
+        },
         cursorColor: Colors.black,
         decoration: InputDecoration(
           contentPadding: EdgeInsets.all(Marketplace.spacing4),
