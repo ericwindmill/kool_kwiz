@@ -83,66 +83,73 @@ class FirebaseService {
     return player;
   }
 
-  // The logic for this shouldn't be in one long method. But, it might help
-  // us approach a refactoring example holistically.
-  // TODO: split logic depending on the refactoring examples for the talk
   static Future<Quiz> createQuiz() async {
-    final questions = <Question>[];
+    final questions = <(Question, Answer)>[];
     return FirebaseFirestore.instance
         .collection('questions')
-        // Get ALL the questions
         .get()
-        .then((QuerySnapshot<Map<String, dynamic>> value) {
+        .then((QuerySnapshot value) {
       for (var doc in value.docs) {
         final data = doc.data();
-        final questionType = data['type'];
-        if (questionType == 'textQuestion') {
-          final question = TextQuestion(
-            id: doc.reference.id,
-            questionBody: data['questionBody'],
-            category: doc['category'],
-            possibleAnswers: {
-              'A': doc['possibleAnswers']['A'],
-              'B': doc['possibleAnswers']['B'],
-              'C': doc['possibleAnswers']['C'],
-              'D': doc['possibleAnswers']['D'],
-            },
-            correctAnswer: data['correctAnswer'],
-            results: {
-              'A': doc['results']['A'],
-              'B': doc['results']['B'],
-              'C': doc['results']['C'],
-              'D': doc['results']['D'],
-            },
-          );
-          questions.add(question);
-        } else if (questionType == 'imageQuestion') {
-          final String id = doc.reference.id;
-          final question = ImageQuestion(
-            id: id,
-            imagePath: data['imagePath'],
-            category: doc['category'],
-            possibleAnswers: {
-              'A': doc['possibleAnswers']['A'],
-              'B': doc['possibleAnswers']['B'],
-              'C': doc['possibleAnswers']['C'],
-              'D': doc['possibleAnswers']['D'],
-            },
-            correctAnswer: data['correctAnswer'],
-            results: {
-              'A': doc['results']['A'],
-              'B': doc['results']['B'],
-              'C': doc['results']['C'],
-              'D': doc['results']['D'],
-            },
-          );
-          questions.add(question);
-        }
+
+        // TODO: This doesn't seem to validate the Map values types. Is there a way to do that?
+        final question = switch (data) {
+          {
+            'type': 'textQuestion',
+            'category': _,
+            'answer': _,
+            'questionBody': _
+          } =>
+            TextQuestion(
+              id: doc.reference.id,
+              questionBody: data['questionBody'] as String,
+              category: doc['category'],
+            ),
+          {
+            'type': 'imageQuestion',
+            'category': _,
+            'answer': _,
+            'imagePath': _,
+          } =>
+            ImageQuestion(
+              id: doc.reference.id,
+              imagePath: data['imagePath'] as String,
+              category: doc['category'],
+            ),
+          _ => throw FormatException('Question didn\'t match any patterns'),
+        };
+
+        final answerJson = data['answer'];
+        final answer = switch (answerJson) {
+          {
+            'type': 'openTextAnswer',
+            'correctAnswer': _,
+          } =>
+            OpenTextAnswer(
+                correctAnswer: answerJson['correctAnswer'] as String),
+          {
+            'type': 'multipleChoiceAnswer',
+            'correctAnswer': _,
+            'answerOptions': _,
+          } =>
+            MultipleChoiceAnswer(
+              correctAnswer: answerJson['correctAnswer'] as String,
+              answerOptions:
+                  (answerJson['answerOptions'] as List).cast<String>(),
+            ),
+          {
+            'type': 'booleanAnswer',
+            'correctAnswer': _,
+          } =>
+            BooleanAnswer(correctAnswer: answerJson['correctAnswer'] as String),
+          _ => throw FormatException('Answer didn\'t match any patters'),
+        };
+
+        questions.add((question, answer));
       }
 
-      final quiz = Quiz(questions: []);
-
-      // Filter the questions to get random questions
+      final quiz = Quiz(questionList: []);
+      // Make sure every quiz contains a random assortment of 10 questions.
       questions.shuffle();
       final questionsForQuizLength = questions.take(quiz.length).toList();
       quiz.addQuestions(questionsForQuizLength);

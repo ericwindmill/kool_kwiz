@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:koolkwiz/screens/leaderboard_screen.dart';
 import 'package:provider/provider.dart';
 
 import 'app_state.dart';
 import 'marketplace/marketplace.dart';
 import 'model/model.dart';
-import 'screens/quiz_screen.dart';
-import 'screens/start_quiz_screen.dart';
+import 'views/quiz_screen.dart';
+import 'views/start_quiz_screen.dart';
+import 'views/leaderboard_screen.dart';
 
 // This Widget is basically the router.
 class AppShell extends StatefulWidget {

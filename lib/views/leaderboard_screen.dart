@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:koolkwiz/app_state.dart';
 import 'package:koolkwiz/marketplace/marketplace.dart';
 import 'package:provider/provider.dart';
 
@@ -19,7 +18,6 @@ class LeaderboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final appState = context.watch<AppState>();
     final player = context.watch<Player>();
     final leaderboard = context.watch<List<Player>>();
 
@@ -35,13 +33,13 @@ class LeaderboardScreen extends StatelessWidget {
                 'Kwiz Complete!',
                 style: Marketplace.heading1,
               ),
-              Seasons(
+              SeasonsDecoration(
                 smallSize: true,
               ),
             ],
           ),
           SizedBox(height: Marketplace.spacing4),
-          BigCard(
+          MarketCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -56,7 +54,7 @@ class LeaderboardScreen extends StatelessWidget {
           SizedBox(height: Marketplace.spacing4),
           Text('Leaderboard', style: Marketplace.heading1),
           Expanded(
-            child: BigCard(
+            child: MarketCard(
               child: ListView.separated(
                 itemCount: leaderboard.length,
                 itemBuilder: (context, idx) {

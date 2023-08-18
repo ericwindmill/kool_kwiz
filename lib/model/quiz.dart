@@ -1,16 +1,16 @@
-import 'package:koolkwiz/model/question.dart';
+import 'model.dart';
 
 class Quiz {
   Quiz({
-    required this.questions,
+    required this.questionList,
     this.length = 3,
   });
 
-  final List<Question> questions;
+  final List<(Question, Answer)> questionList;
   final int length;
 
-  List<Question> addQuestions(List<Question> newQuestions) {
-    questions.addAll(newQuestions);
-    return questions;
+  List<(Question, Answer)> addQuestions(List<(Question, Answer)> newQuestions) {
+    questionList.addAll(newQuestions);
+    return questionList;
   }
 }
