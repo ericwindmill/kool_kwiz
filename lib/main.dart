@@ -65,7 +65,8 @@ class _AuthGuardState extends State<AuthGuard> {
             return MultiProvider(
               providers: [
                 ChangeNotifierProvider(
-                    create: (_) => AppState(quiz: _quiz!, player: _player!)),
+                  create: (_) => AppState(quiz: _quiz!, player: _player!),
+                ),
                 StreamProvider<Player>(
                   create: (_) => FirebaseService.playerStream(_player!),
                   initialData: _player!,

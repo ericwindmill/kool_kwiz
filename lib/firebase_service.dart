@@ -9,10 +9,7 @@ class FirebaseService {
     return FirebaseFirestore.instance
         .doc('users/${player.id}')
         .snapshots()
-        .map((event) {
-      final playerData = event.data()!;
-      return Player.fromJson(playerData);
-    });
+        .map((event) => Player.fromJson(event.data()!));
   }
 
   // All users that have completed at least one quiz
@@ -32,6 +29,27 @@ class FirebaseService {
 
       return players;
     });
+  }
+
+  // functional version
+  static Future<List<Player>> _getLeaderboard() async {
+    final players = <Player>[];
+    final snapshot = await FirebaseFirestore.instance
+        .collection('users')
+        .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
+        .limit(30)
+        .get();
+    final docs = snapshot.docs;
+    for (var doc in docs) {
+      final data = doc.data();
+      final player = Player.fromJson(data);
+      players.add(player);
+    }
+
+    players.sort((a, b) => b.leaderboardStats.cumulativeScore
+        .compareTo(a.leaderboardStats.cumulativeScore));
+
+    return players;
   }
 
   static Future<Player> createUser(UserCredential userCredential) async {
@@ -83,6 +101,48 @@ class FirebaseService {
     return player;
   }
 
+  static Future<Player> _createUserFunctional(
+      UserCredential userCredential) async {
+    final existingPlayerDoc = await FirebaseFirestore.instance
+        .doc('users/${userCredential.user!.uid}')
+        .get();
+
+    final data = existingPlayerDoc.data()!;
+    Player player = switch (existingPlayerDoc.exists) {
+      true => Player(
+          id: existingPlayerDoc.id,
+          name: data['name'],
+          currentScore: 0,
+          leaderboardStats: LeaderboardStats(
+            highestScore: data['leaderboardStats']['highestScore'],
+            date: (data['leaderboardStats']['date'] as Timestamp).toDate(),
+            cumulativeScore: data['leaderboardStats']['cumulativeScore'],
+          ),
+        ),
+      false => Player(
+          id: userCredential.user!.uid,
+          name: generateRandomPlayerName(),
+          leaderboardStats: LeaderboardStats(
+            date: DateTime.now(),
+          ),
+        ),
+    };
+
+    // Create user in Firestore, in order to track score
+    await FirebaseFirestore.instance.doc('users/${player.id}').set({
+      'name': player.name,
+      'id': player.id,
+      'score': player.currentScore,
+      'leaderboardStats': {
+        'highestScore': player.leaderboardStats.highestScore,
+        'date': player.leaderboardStats.date,
+        'cumulativeScore': player.leaderboardStats.cumulativeScore,
+      },
+    });
+
+    return player;
+  }
+
   static Future<Quiz> createQuiz() async {
     final questions = <(Question, Answer)>[];
     return FirebaseFirestore.instance
@@ -91,14 +151,12 @@ class FirebaseService {
         .then((QuerySnapshot value) {
       for (var doc in value.docs) {
         final data = doc.data();
-
-        // TODO: This doesn't seem to validate the Map values types. Is there a way to do that?
         final question = switch (data) {
           {
             'type': 'textQuestion',
-            'category': _,
+            'category': String _,
             'answer': _,
-            'questionBody': _
+            'questionBody': String _
           } =>
             TextQuestion(
               id: doc.reference.id,
@@ -107,9 +165,9 @@ class FirebaseService {
             ),
           {
             'type': 'imageQuestion',
-            'category': _,
+            'category': String _,
             'answer': _,
-            'imagePath': _,
+            'imagePath': String _,
           } =>
             ImageQuestion(
               id: doc.reference.id,
