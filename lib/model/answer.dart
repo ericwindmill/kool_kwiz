@@ -1,12 +1,42 @@
-// Two things are wrong here:
-// 1. the code is annoying to update. Any class change to Answer needs to be repeated.
-//        We can add multiple-choice multiple-answers as an example.
-// 2. The answer should not be responsible for validation logic
-
 sealed class Answer {
   final String correctAnswer;
 
   Answer({required this.correctAnswer});
+
+  static Answer fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {
+        'type': 'openTextAnswer',
+        'correctAnswer': _,
+      } =>
+        OpenTextAnswer(
+          correctAnswer: json['correctAnswer'] as String,
+        ),
+      {
+        'type': 'multipleChoiceAnswer',
+        'correctAnswer': _,
+        'answerOptions': _,
+      } =>
+        MultipleChoiceAnswer(
+          correctAnswer: json['correctAnswer'] as String,
+          answerOptions: (json['answerOptions'] as List).cast<String>(),
+        ),
+      {
+        'type': 'booleanAnswer',
+        'correctAnswer': _,
+      } =>
+        BooleanAnswer(correctAnswer: json['correctAnswer'] as String),
+      _ => throw FormatException("Answer didn't match any patters"),
+    };
+  }
+
+  static Map<String, dynamic> toJson(Answer answer) {
+    return switch (answer) {
+      OpenTextAnswer _ => {},
+      BooleanAnswer _ => {},
+      MultipleChoiceAnswer _ => {}
+    };
+  }
 }
 
 class OpenTextAnswer extends Answer {

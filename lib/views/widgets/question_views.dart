@@ -3,8 +3,12 @@ import 'package:flutter/material.dart';
 import '../../marketplace/marketplace.dart';
 import '../../model/model.dart';
 
-class ImageQuestionView extends StatelessWidget {
-  const ImageQuestionView({super.key, required this.question});
+abstract class QuestionWidget extends StatelessWidget {
+  const QuestionWidget({super.key});
+}
+
+class ImageQuestionWidget extends QuestionWidget {
+  const ImageQuestionWidget({super.key, required this.question});
 
   final ImageQuestion question;
 
@@ -23,11 +27,8 @@ class ImageQuestionView extends StatelessWidget {
   }
 }
 
-class TextQuestionView extends StatelessWidget {
-  const TextQuestionView({
-    super.key,
-    required this.question,
-  });
+class TextQuestionWidget extends QuestionWidget {
+  const TextQuestionWidget({super.key, required this.question});
 
   final TextQuestion question;
 

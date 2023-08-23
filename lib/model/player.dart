@@ -21,17 +21,31 @@ class Player {
     required this.leaderboardStats,
   });
 
-  static Player fromJson(Map<String, dynamic> json, {String? id}) {
-    return Player(
-      id: json['id'] ?? id,
-      name: json['name'],
-      currentScore: json['score'],
-      leaderboardStats: LeaderboardStats(
-        highestScore: json['leaderboardStats']['highestScore'],
-        date: (json['leaderboardStats']['date'] as Timestamp).toDate(),
-        cumulativeScore: json['leaderboardStats']['cumulativeScore'],
-      ),
-    );
+  static Player fromJson(Map<String, dynamic> json) {
+    if (json
+        case {
+          'id': String _,
+          'name': String _,
+          'score': int _,
+          'leaderboardStats': {
+            'highestScore': int _,
+            'date': Timestamp _,
+            'cumulativeScore': int _,
+          }
+        }) {
+      return Player(
+        id: json['id'] as String,
+        name: json['name'] as String,
+        currentScore: json['score'] as int,
+        leaderboardStats: LeaderboardStats(
+          highestScore: json['leaderboardStats']['highestScore'] as int,
+          date: (json['leaderboardStats']['date'] as Timestamp).toDate(),
+          cumulativeScore: json['leaderboardStats']['cumulativeScore'] as int,
+        ),
+      );
+    } else {
+      throw FormatException('Something aint right');
+    }
   }
 
   Map<String, dynamic> toJson() {

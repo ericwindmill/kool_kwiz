@@ -21,9 +21,8 @@ class FirebaseService {
         .snapshots()
         .map((event) {
       var players = event.docs
-          .map((QueryDocumentSnapshot<Map<String, dynamic>> snapshot) {
-        return Player.fromJson(snapshot.data());
-      }).toList();
+          .map((snapshot) => Player.fromJson(snapshot.data()))
+          .toList();
       players.sort((a, b) => b.leaderboardStats.cumulativeScore
           .compareTo(a.leaderboardStats.cumulativeScore));
 
@@ -31,47 +30,24 @@ class FirebaseService {
     });
   }
 
-  // functional version
-  static Future<List<Player>> _getLeaderboard() async {
-    final players = <Player>[];
-    final snapshot = await FirebaseFirestore.instance
-        .collection('users')
-        .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
-        .limit(30)
-        .get();
-    final docs = snapshot.docs;
-    for (var doc in docs) {
-      final data = doc.data();
-      final player = Player.fromJson(data);
-      players.add(player);
-    }
-
-    players.sort((a, b) => b.leaderboardStats.cumulativeScore
-        .compareTo(a.leaderboardStats.cumulativeScore));
-
-    return players;
-  }
-
   static Future<Player> createUser(UserCredential userCredential) async {
     final existingPlayerDoc = await FirebaseFirestore.instance
         .doc('users/${userCredential.user!.uid}')
         .get();
 
-    // Variable mask for initialization
     Player player;
 
-    // If user exists, this isn't their first time opening the app,
-    // return early so we don't overwrite the score
+    // If user exists, this isn't their first time opening the app, return early so we don't overwrite the score
     if (existingPlayerDoc.exists) {
       final data = existingPlayerDoc.data()!;
       player = Player(
         id: existingPlayerDoc.id,
-        name: data['name'],
+        name: data['name'] as String,
         currentScore: 0,
         leaderboardStats: LeaderboardStats(
-          highestScore: data['leaderboardStats']['highestScore'],
+          highestScore: data['leaderboardStats']['highestScore'] as int,
           date: (data['leaderboardStats']['date'] as Timestamp).toDate(),
-          cumulativeScore: data['leaderboardStats']['cumulativeScore'],
+          cumulativeScore: data['leaderboardStats']['cumulativeScore'] as int,
         ),
       );
     } else {
@@ -85,7 +61,7 @@ class FirebaseService {
         ),
       );
 
-      // Create user in Firestore, in order to track score
+// Create user in Firestore, in order to track score
       await FirebaseFirestore.instance.doc('users/${player.id}').set({
         'name': player.name,
         'id': player.id,
@@ -101,110 +77,26 @@ class FirebaseService {
     return player;
   }
 
-  static Future<Player> _createUserFunctional(
-      UserCredential userCredential) async {
-    final existingPlayerDoc = await FirebaseFirestore.instance
-        .doc('users/${userCredential.user!.uid}')
-        .get();
-
-    final data = existingPlayerDoc.data()!;
-    Player player = switch (existingPlayerDoc.exists) {
-      true => Player(
-          id: existingPlayerDoc.id,
-          name: data['name'],
-          currentScore: 0,
-          leaderboardStats: LeaderboardStats(
-            highestScore: data['leaderboardStats']['highestScore'],
-            date: (data['leaderboardStats']['date'] as Timestamp).toDate(),
-            cumulativeScore: data['leaderboardStats']['cumulativeScore'],
-          ),
-        ),
-      false => Player(
-          id: userCredential.user!.uid,
-          name: generateRandomPlayerName(),
-          leaderboardStats: LeaderboardStats(
-            date: DateTime.now(),
-          ),
-        ),
-    };
-
-    // Create user in Firestore, in order to track score
-    await FirebaseFirestore.instance.doc('users/${player.id}').set({
-      'name': player.name,
-      'id': player.id,
-      'score': player.currentScore,
-      'leaderboardStats': {
-        'highestScore': player.leaderboardStats.highestScore,
-        'date': player.leaderboardStats.date,
-        'cumulativeScore': player.leaderboardStats.cumulativeScore,
-      },
-    });
-
-    return player;
-  }
+  static Future<QuerySnapshot> getAllQuestions() =>
+      FirebaseFirestore.instance.collection('questions').get();
 
   static Future<Quiz> createQuiz() async {
-    final questions = <(Question, Answer)>[];
-    return FirebaseFirestore.instance
-        .collection('questions')
-        .get()
-        .then((QuerySnapshot value) {
-      for (var doc in value.docs) {
+    return await FirebaseService.getAllQuestions().then((QuerySnapshot value) {
+      final questions = value.docs.map((doc) {
         final data = doc.data();
-        final question = switch (data) {
-          {
-            'type': 'textQuestion',
-            'category': String _,
-            'answer': _,
-            'questionBody': String _
-          } =>
-            TextQuestion(
-              id: doc.reference.id,
-              questionBody: data['questionBody'] as String,
-              category: doc['category'],
-            ),
-          {
-            'type': 'imageQuestion',
-            'category': String _,
-            'answer': _,
-            'imagePath': String _,
-          } =>
-            ImageQuestion(
-              id: doc.reference.id,
-              imagePath: data['imagePath'] as String,
-              category: doc['category'],
-            ),
-          _ => throw FormatException('Question didn\'t match any patterns'),
-        };
-
-        final answerJson = data['answer'];
-        final answer = switch (answerJson) {
-          {
-            'type': 'openTextAnswer',
-            'correctAnswer': _,
-          } =>
-            OpenTextAnswer(
-                correctAnswer: answerJson['correctAnswer'] as String),
-          {
-            'type': 'multipleChoiceAnswer',
-            'correctAnswer': _,
-            'answerOptions': _,
-          } =>
-            MultipleChoiceAnswer(
-              correctAnswer: answerJson['correctAnswer'] as String,
-              answerOptions:
-                  (answerJson['answerOptions'] as List).cast<String>(),
-            ),
-          {
-            'type': 'booleanAnswer',
-            'correctAnswer': _,
-          } =>
-            BooleanAnswer(correctAnswer: answerJson['correctAnswer'] as String),
-          _ => throw FormatException('Answer didn\'t match any patters'),
-        };
-
-        questions.add((question, answer));
-      }
+        if (data
+            case <String, dynamic>{
+              'type': String _,
+              'category': String _,
+              'answer': _,
+            }) {
+          return Question.fromFirestore(doc);
+        } else {
+          throw FormatException(
+            'Incoming Firestore Question data is malformed',
+          );
+        }
+      }).toList();
 
       final quiz = Quiz(questionList: []);
       questions.shuffle();
@@ -226,8 +118,7 @@ class FirebaseService {
     FirebaseFirestore.instance.doc('users/${player.id}').update(json);
   }
 
-  static Future<void> completeQuiz(Player player) async {
-    player.updateLeaderboardStats();
+  static Future<void> updateUserLeaderboardStats(Player player) async {
     FirebaseFirestore.instance
         .doc('users/${player.id}')
         .update(player.toJson());

@@ -1,20 +1,56 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// multiple returns
-// future.wait with records for Player and Quiz FutureBuilder
-// separate serialization, so the code is more maintainable if you have multiple backends
-// questions with multiple correct answers
-// switch over a combination of answers?
-// button highlight / selected exhaustiveness checking
-// Question and Answer split out
+import 'answer.dart';
 
 sealed class Question {
   Question({
     required this.id,
     required this.category,
+    required this.answer,
   });
+
   String id;
   String category;
+  Answer answer;
+
+  static Question fromJson(Map<String, dynamic> json) {
+    return switch (json) {
+      {
+        'type': 'textQuestion',
+        'category': String _,
+        'answer': Map<String, dynamic> _,
+        'questionBody': String _,
+        'id': String _,
+      } =>
+        TextQuestion(
+          questionBody: json['questionBody'] as String,
+          category: json['category'] as String,
+          answer: Answer.fromJson(json['answer'] as Map<String, dynamic>),
+          id: json['id'] as String,
+        ),
+      {
+        'type': 'imageQuestion',
+        'category': String _,
+        'answer': _,
+        'imagePath': String _,
+        'id': String _,
+      } =>
+        ImageQuestion(
+          imagePath: json['imagePath'] as String,
+          category: json['category'] as String,
+          answer: Answer.fromJson(json['answer'] as Map<String, dynamic>),
+          id: json['id'] as String,
+        ),
+      _ => throw FormatException('Question didn\'t match any patterns'),
+    };
+  }
+
+  static Question fromFirestore(QueryDocumentSnapshot snapshot) {
+    final id = snapshot.reference.id;
+    final json = snapshot.data() as Map<String, dynamic>;
+    json['id'] = id;
+    return Question.fromJson(json);
+  }
 }
 
 class TextQuestion extends Question {
@@ -22,56 +58,19 @@ class TextQuestion extends Question {
     required this.questionBody,
     required super.id,
     required super.category,
+    required super.answer,
   });
 
   final String questionBody;
-
-  factory TextQuestion.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> snapshot) {
-    final data = snapshot.data()!;
-
-    return TextQuestion(
-      id: snapshot.id,
-      questionBody: data['questionBody'],
-      category: data['category'],
-    );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'id': id,
-      'questionBody': questionBody,
-      'category': category,
-    };
-  }
 }
 
 class ImageQuestion extends Question {
-  //super class
   ImageQuestion({
     required this.imagePath,
     required super.id,
     required super.category,
+    required super.answer,
   });
 
   String imagePath;
-
-  factory ImageQuestion.fromFirestore(
-      DocumentSnapshot<Map<String, dynamic>> snapshot) {
-    final data = snapshot.data()!;
-
-    return ImageQuestion(
-      id: snapshot.id,
-      imagePath: data['imagePath'],
-      category: data['category'],
-    );
-  }
-
-  Map<String, dynamic> toFirestore() {
-    return {
-      'id': id,
-      'imagePath': imagePath,
-      'category': category,
-    };
-  }
 }

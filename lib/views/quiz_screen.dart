@@ -17,35 +17,35 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  (Widget, Widget) questionAndAnswerView({
+  (QuestionWidget, AnswerWidget) questionAndAnswerView({
     required Question question,
     required Answer answer,
     required AppState appState,
   }) {
     return switch ((question, answer)) {
-      (TextQuestion textQuestion, MultipleChoiceAnswer multChoiceAnswer) => (
-          TextQuestionView(question: textQuestion),
-          MultipleChoiceAnswerView(answer: multChoiceAnswer),
+      (TextQuestion question, MultipleChoiceAnswer answer) => (
+          TextQuestionWidget(question: question),
+          MultipleChoiceWidget(answer: answer),
         ),
       (TextQuestion textQuestion, OpenTextAnswer textAnswer) => (
-          TextQuestionView(question: textQuestion),
-          OpenTextAnswerView(answer: textAnswer),
+          TextQuestionWidget(question: textQuestion),
+          TextAnswerWidget(answer: textAnswer),
         ),
       (TextQuestion textQuestion, BooleanAnswer boolAnswer) => (
-          TextQuestionView(question: textQuestion),
-          BooleanAnswerView(answer: boolAnswer),
+          TextQuestionWidget(question: textQuestion),
+          BooleanAnswerWidget(answer: boolAnswer),
         ),
       (ImageQuestion imageQuestion, MultipleChoiceAnswer multChoiceAnswer) => (
-          ImageQuestionView(question: imageQuestion),
-          MultipleChoiceAnswerView(answer: multChoiceAnswer),
+          ImageQuestionWidget(question: imageQuestion),
+          MultipleChoiceWidget(answer: multChoiceAnswer),
         ),
       (ImageQuestion imageQuestion, OpenTextAnswer textAnswer) => (
-          ImageQuestionView(question: imageQuestion),
-          OpenTextAnswerView(answer: textAnswer)
+          ImageQuestionWidget(question: imageQuestion),
+          TextAnswerWidget(answer: textAnswer)
         ),
       (ImageQuestion imageCollection, BooleanAnswer boolAnswer) => (
-          ImageQuestionView(question: imageCollection),
-          BooleanAnswerView(answer: boolAnswer),
+          ImageQuestionWidget(question: imageCollection),
+          BooleanAnswerWidget(answer: boolAnswer),
         ),
     };
   }

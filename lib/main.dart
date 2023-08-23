@@ -70,10 +70,17 @@ class _AuthGuardState extends State<AuthGuard> {
                 StreamProvider<Player>(
                   create: (_) => FirebaseService.playerStream(_player!),
                   initialData: _player!,
+                  catchError: (_, error) {
+                    throw Exception('Error in StreamProvider.Player!  $error');
+                  },
                 ),
                 StreamProvider<List<Player>>(
                   create: (_) => FirebaseService.leaderboardStream(),
                   initialData: [],
+                  catchError: (_, error) {
+                    throw Exception(
+                        'Error in StreamProvider.Leaderboard!  $error');
+                  },
                 )
               ],
               child: AppShell(),
