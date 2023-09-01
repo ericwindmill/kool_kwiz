@@ -6,10 +6,10 @@ class Quiz {
     this.length = 5,
   });
 
-  final List<(Question, Answer)> questionList;
+  final List<Question> questionList;
   final int length;
 
-  List<(Question, Answer)> addQuestions(List<(Question, Answer)> newQuestions) {
+  List<Question> addQuestions(List<Question> newQuestions) {
     questionList.addAll(newQuestions);
     return questionList;
   }

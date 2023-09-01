@@ -17,35 +17,34 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  (Widget, Widget) questionAndAnswerView({
+  (QuestionWidget, AnswerWidget) questionAndAnswerView({
     required Question question,
     required Answer answer,
-    required AppState appState,
   }) {
-    return switch ((question, answer)) {
-      (TextQuestion textQuestion, MultipleChoiceAnswer multChoiceAnswer) => (
-          TextQuestionView(question: textQuestion),
-          MultipleChoiceAnswerView(answer: multChoiceAnswer),
+    return switch (question) {
+      TextQuestion(:MultipleChoiceAnswer answer) => (
+          TextQuestionWidget(question: question),
+          MultipleChoiceWidget(answer: answer),
         ),
-      (TextQuestion textQuestion, OpenTextAnswer textAnswer) => (
-          TextQuestionView(question: textQuestion),
-          OpenTextAnswerView(answer: textAnswer),
+      TextQuestion(:OpenTextAnswer answer) => (
+          TextQuestionWidget(question: question),
+          TextAnswerWidget(answer: answer),
         ),
-      (TextQuestion textQuestion, BooleanAnswer boolAnswer) => (
-          TextQuestionView(question: textQuestion),
-          BooleanAnswerView(answer: boolAnswer),
+      TextQuestion(:BooleanAnswer answer) => (
+          TextQuestionWidget(question: question),
+          BooleanAnswerWidget(answer: answer),
         ),
-      (ImageQuestion imageQuestion, MultipleChoiceAnswer multChoiceAnswer) => (
-          ImageQuestionView(question: imageQuestion),
-          MultipleChoiceAnswerView(answer: multChoiceAnswer),
+      ImageQuestion(:MultipleChoiceAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          MultipleChoiceWidget(answer: answer),
         ),
-      (ImageQuestion imageQuestion, OpenTextAnswer textAnswer) => (
-          ImageQuestionView(question: imageQuestion),
-          OpenTextAnswerView(answer: textAnswer)
+      ImageQuestion(:OpenTextAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          TextAnswerWidget(answer: answer)
         ),
-      (ImageQuestion imageCollection, BooleanAnswer boolAnswer) => (
-          ImageQuestionView(question: imageCollection),
-          BooleanAnswerView(answer: boolAnswer),
+      ImageQuestion(:BooleanAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          BooleanAnswerWidget(answer: answer),
         ),
     };
   }
@@ -59,7 +58,6 @@ class _QuizScreenState extends State<QuizScreen> {
         final (question, answer) = questionAndAnswerView(
           question: state.currentQuestion,
           answer: state.currentAnswer,
-          appState: state,
         );
 
         return Padding(

@@ -3,8 +3,30 @@ import 'package:flutter/material.dart';
 import '../../marketplace/marketplace.dart';
 import '../../model/model.dart';
 
-class ImageQuestionView extends StatelessWidget {
-  const ImageQuestionView({super.key, required this.question});
+// class QuestionWidgetTemp extends StatelessWidget {
+//   const QuestionWidgetTemp({super.key, required this.question});
+//   Question question;
+//   @override
+//   Widget build(BuildContext context) {
+//     return MarketCard(
+//       child: question is TextQuestion ?
+//       TextField() :
+//       Column(
+//         children: [
+//           Image.asset(''),
+//           Text('Who is this?'),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
+abstract class QuestionWidget extends StatelessWidget {
+  const QuestionWidget({super.key});
+}
+
+class ImageQuestionWidget extends QuestionWidget {
+  const ImageQuestionWidget({super.key, required this.question});
 
   final ImageQuestion question;
 
@@ -23,11 +45,8 @@ class ImageQuestionView extends StatelessWidget {
   }
 }
 
-class TextQuestionView extends StatelessWidget {
-  const TextQuestionView({
-    super.key,
-    required this.question,
-  });
+class TextQuestionWidget extends QuestionWidget {
+  const TextQuestionWidget({super.key, required this.question});
 
   final TextQuestion question;
 

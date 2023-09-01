@@ -1,8 +1,14 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  language:
+    strict-raw-types: true
+    strict-casts: true
+
 linter:
   rules:
     prefer_const_constructors: false
     avoid_print: false
     prefer_const_literals_to_create_immutables: false
     prefer_const_constructors_in_immutables: false
+

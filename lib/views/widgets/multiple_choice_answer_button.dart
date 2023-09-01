@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:koolkwiz/marketplace/theme.dart';
 
+import '../../model/question.dart';
+
 class MultipleChoiceAnswerButton extends StatefulWidget {
   MultipleChoiceAnswerButton({
     super.key,
@@ -114,4 +116,16 @@ class _MultipleChoiceAnswerButtonState
       ),
     );
   }
+}
+
+bool buttonColor(Question question) {
+  bool isHovered = false;
+  bool isPressed = false;
+  bool isActive = true;
+
+  var record = (question, isHovered, isPressed, isActive);
+
+  return switch (record) {
+    ((TextQuestion _ || ImageQuestion _), true, false, _) => true,
+  };
 }

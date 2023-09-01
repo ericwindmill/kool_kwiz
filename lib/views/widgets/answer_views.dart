@@ -8,8 +8,12 @@ import '../../model/model.dart';
 
 typedef SelectionMadeCallback = void Function(String);
 
-class MultipleChoiceAnswerView extends StatefulWidget {
-  const MultipleChoiceAnswerView({
+abstract class AnswerWidget extends StatefulWidget {
+  const AnswerWidget({super.key});
+}
+
+class MultipleChoiceWidget extends AnswerWidget {
+  const MultipleChoiceWidget({
     super.key,
     required this.answer,
   });
@@ -17,13 +21,12 @@ class MultipleChoiceAnswerView extends StatefulWidget {
   final MultipleChoiceAnswer answer;
 
   @override
-  State<MultipleChoiceAnswerView> createState() =>
-      _MultipleChoiceAnswerViewState();
+  State<MultipleChoiceWidget> createState() => _MultipleChoiceAnswerViewState();
 }
 
 const List<String> multipleChoiceAnswerKey = ['A', 'B', 'C', 'D'];
 
-class _MultipleChoiceAnswerViewState extends State<MultipleChoiceAnswerView> {
+class _MultipleChoiceAnswerViewState extends State<MultipleChoiceWidget> {
   int _selectedButtonIdx = -1;
 
   // button state before an answer is selected
@@ -65,8 +68,8 @@ class _MultipleChoiceAnswerViewState extends State<MultipleChoiceAnswerView> {
   }
 }
 
-class OpenTextAnswerView extends StatefulWidget {
-  const OpenTextAnswerView({
+class TextAnswerWidget extends AnswerWidget {
+  const TextAnswerWidget({
     super.key,
     required this.answer,
   });
@@ -74,10 +77,10 @@ class OpenTextAnswerView extends StatefulWidget {
   final OpenTextAnswer answer;
 
   @override
-  State<OpenTextAnswerView> createState() => _OpenTextAnswerViewState();
+  State<TextAnswerWidget> createState() => _OpenTextAnswerViewState();
 }
 
-class _OpenTextAnswerViewState extends State<OpenTextAnswerView> {
+class _OpenTextAnswerViewState extends State<TextAnswerWidget> {
   String? textValue;
 
   @override
@@ -102,8 +105,8 @@ class _OpenTextAnswerViewState extends State<OpenTextAnswerView> {
   }
 }
 
-class BooleanAnswerView extends StatefulWidget {
-  const BooleanAnswerView({
+class BooleanAnswerWidget extends AnswerWidget {
+  const BooleanAnswerWidget({
     super.key,
     required this.answer,
   });
@@ -111,10 +114,10 @@ class BooleanAnswerView extends StatefulWidget {
   final BooleanAnswer answer;
 
   @override
-  State<BooleanAnswerView> createState() => _BooleanAnswerViewState();
+  State<BooleanAnswerWidget> createState() => _BooleanAnswerViewState();
 }
 
-class _BooleanAnswerViewState extends State<BooleanAnswerView> {
+class _BooleanAnswerViewState extends State<BooleanAnswerWidget> {
   bool _selected = false;
 
   @override

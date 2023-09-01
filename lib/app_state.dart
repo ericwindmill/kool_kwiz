@@ -11,8 +11,8 @@ class AppState extends ChangeNotifier {
   bool quizComplete = false;
   bool quizReady = true;
   int _currentQuestionIdx = 0;
-  Question get currentQuestion => quiz.questionList[_currentQuestionIdx].$1;
-  Answer get currentAnswer => quiz.questionList[_currentQuestionIdx].$2;
+  Question get currentQuestion => quiz.questionList[_currentQuestionIdx];
+  Answer get currentAnswer => quiz.questionList[_currentQuestionIdx].answer;
 
   bool validateAnswer(String value) {
     final isCorrect = value == currentAnswer.correctAnswer;
@@ -31,7 +31,8 @@ class AppState extends ChangeNotifier {
   }
 
   completeQuiz() async {
-    await FirebaseService.completeQuiz(player);
+    player.updateLeaderboardStats();
+    await FirebaseService.updateUserLeaderboardStats(player);
     notifyListeners();
   }
 
