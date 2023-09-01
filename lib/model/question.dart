@@ -17,29 +17,29 @@ sealed class Question {
     return switch (json) {
       {
         'type': 'textQuestion',
-        'category': String _,
-        'answer': Map<String, dynamic> _,
-        'questionBody': String _,
-        'id': String _,
+        'category': String cat,
+        'answer': Map<String, dynamic> answer,
+        'questionBody': String body,
+        'id': String id,
       } =>
         TextQuestion(
-          questionBody: json['questionBody'] as String,
-          category: json['category'] as String,
-          answer: Answer.fromJson(json['answer'] as Map<String, dynamic>),
-          id: json['id'] as String,
+          questionBody: body,
+          category: cat,
+          answer: Answer.fromJson(answer),
+          id: id,
         ),
       {
         'type': 'imageQuestion',
-        'category': String _,
-        'answer': _,
-        'imagePath': String _,
-        'id': String _,
+        'category': String category,
+        'answer': Map<String, dynamic> answer,
+        'imagePath': String imagePath,
+        'id': String id,
       } =>
         ImageQuestion(
-          imagePath: json['imagePath'] as String,
-          category: json['category'] as String,
-          answer: Answer.fromJson(json['answer'] as Map<String, dynamic>),
-          id: json['id'] as String,
+          imagePath: imagePath,
+          category: category,
+          answer: Answer.fromJson(answer),
+          id: id,
         ),
       _ => throw FormatException('Question didn\'t match any patterns'),
     };

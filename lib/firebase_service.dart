@@ -9,7 +9,7 @@ class FirebaseService {
     return FirebaseFirestore.instance
         .doc('users/${player.id}')
         .snapshots()
-        .map((event) => Player.fromJson(event.data()!));
+        .map((snapshot) => Player.fromJson(snapshot.data()!));
   }
 
   // All users that have completed at least one quiz
@@ -86,7 +86,7 @@ class FirebaseService {
         final data = doc.data();
         if (data
             case <String, dynamic>{
-              'type': String _,
+              'type': 'textQuestion' || 'imageQuestion',
               'category': String _,
               'answer': _,
             }) {

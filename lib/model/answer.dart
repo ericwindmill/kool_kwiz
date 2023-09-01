@@ -7,44 +7,68 @@ sealed class Answer {
     return switch (json) {
       {
         'type': 'openTextAnswer',
-        'correctAnswer': _,
+        'correctAnswer': String correctAnswer,
       } =>
         OpenTextAnswer(
-          correctAnswer: json['correctAnswer'] as String,
+          correctAnswer: correctAnswer,
         ),
       {
         'type': 'multipleChoiceAnswer',
-        'correctAnswer': _,
-        'answerOptions': _,
+        'correctAnswer': String correctAnswer,
+        'answerOptions': List<dynamic> answerOptions,
       } =>
         MultipleChoiceAnswer(
-          correctAnswer: json['correctAnswer'] as String,
-          answerOptions: (json['answerOptions'] as List).cast<String>(),
+          correctAnswer: correctAnswer,
+          answerOptions: answerOptions.cast<String>(),
         ),
       {
         'type': 'booleanAnswer',
-        'correctAnswer': _,
+        'correctAnswer': String correctAnswer,
       } =>
-        BooleanAnswer(correctAnswer: json['correctAnswer'] as String),
+        BooleanAnswer(correctAnswer: correctAnswer),
       _ => throw FormatException("Answer didn't match any patters"),
     };
   }
 
   static Map<String, dynamic> toJson(Answer answer) {
     return switch (answer) {
-      OpenTextAnswer _ => {},
-      BooleanAnswer _ => {},
-      MultipleChoiceAnswer _ => {}
+      OpenTextAnswer textAnswer => {
+          'type': 'openTextAnswer',
+          'correctAnswer': textAnswer.correctAnswer
+        },
+      BooleanAnswer boolAnswer => {
+          'type': 'booleanAnswer',
+          'correctAnswer': boolAnswer.correctAnswer
+        },
+      MultipleChoiceAnswer multChoice => {
+          'type': 'multipleChoiceAnswer',
+          'correctAnswer': multChoice.correctAnswer,
+          'answerOptions': multChoice.answerOptions
+        }
     };
   }
 }
 
 class OpenTextAnswer extends Answer {
   OpenTextAnswer({required super.correctAnswer});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'openTextAnswer',
+      'correctAnswer': correctAnswer,
+    };
+  }
 }
 
 class BooleanAnswer extends Answer {
   BooleanAnswer({required super.correctAnswer});
+
+  Map<String, dynamic> toJson() {
+    return {
+      'type': 'booleanAnswer',
+      'correctAnswer': correctAnswer,
+    };
+  }
 }
 
 class MultipleChoiceAnswer extends Answer {

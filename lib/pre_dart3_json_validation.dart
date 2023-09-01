@@ -38,16 +38,11 @@ Future<Quiz> _createQuizOld() async {
           throw FormatException(
               'Answer.correctAnswer must exist, and must be a String. Got ${answerData['correctAnswer']}');
         }
-        final correctAnswer = data['correctAnswer'] as String;
-        late Answer answer;
-        if (answerType == 'openTextAnswer') {
-          answer = OpenTextAnswer(correctAnswer: correctAnswer);
-        } else if (answerType == 'multipleChoiceAnswer') {
-          if (!answerData.containsKey('answerOptions') ||
-              answerData['answerOptions'] is! List<String>) {
-            throw FormatException(
-                'answerOptions must exist in a multipleChoiceAnswer, and it must be a String. Got ${answerData['answerOptions']}');
-          } else if (answerType == 'booleanAnswer') {}
+
+        if (answerType == 'multipleChoiceAnswer' &&
+            answerData['answerOptions'] is! List<String>) {
+          throw FormatException(
+              'Answer.correctAnswer must exist, and must be a String. Got ${answerData['correctAnswer']}');
         }
 
         final questionType = data['type'];
@@ -68,12 +63,7 @@ Future<Quiz> _createQuizOld() async {
         }
         // Build Question
         final question = Question.fromJson(data);
-
-        final answerJson = data['answer'];
-        if (answerJson is! Map<String, dynamic>) {
-          throw FormatException(
-              'Answer data must exist, and must be a Map. Got $answerJson');
-        }
+        questions.add(question);
       } on FormatException catch (e) {
         print('Format Exception! Skipping this question.');
         continue;
@@ -91,23 +81,33 @@ Future<Quiz> _createQuizOld() async {
   });
 }
 
-Player fromJson(Map<String, dynamic> json) {
-  if (json.containsKey('id') &&
-      json['id'] is String &&
-      json.containsKey('name') &&
-      json['id'] is String &&
-      json.containsKey('score') &&
-      json['id'] is int &&
-      json.containsKey('leaderboardStats')) {}
-
-  return Player(
-    id: json['id'] as String,
-    name: json['name'] as String,
-    currentScore: json['score'] as int,
-    leaderboardStats: LeaderboardStats(
-      highestScore: json['leaderboardStats']['highestScore'] as int,
-      date: (json['leaderboardStats']['date'] as Timestamp).toDate(),
-      cumulativeScore: json['leaderboardStats']['cumulativeScore'] as int,
-    ),
-  );
-}
+// Player fromJson(Map<String, dynamic> json) {
+//   if (json.containsKey('id') &&
+//       json['id'] is String &&
+//       json.containsKey('name') &&
+//       json['id'] is String &&
+//       json.containsKey('score') &&
+//       json['id'] is int &&
+//       json.containsKey('leaderboardStats')) {
+//     final leaderboardJson = json['leaderboardStats'] as Map<String, dynamic>;
+//     if (leaderboardJson.containsKey('highestScore') &&
+//         json['highestScore'] is int &&
+//         leaderboardJson.containsKey('cumulativeScore') &&
+//         json['cumulativeScore'] is int &&
+//         leaderboardJson.containsKey('date') &&
+//         json['date'] is Timestamp) {
+//       return Player(
+//         id: json['id'] as String,
+//         name: json['name'] as String,
+//         currentScore: json['score'] as int,
+//         leaderboardStats: LeaderboardStats(
+//           highestScore: json['leaderboardStats']['highestScore'] as int,
+//           date: (json['leaderboardStats']['date'] as Timestamp).toDate(),
+//           cumulativeScore: json['leaderboardStats']['cumulativeScore'] as int,
+//         ),
+//       );
+//     }
+//   } else {
+//     throw FormatException('');
+//   }
+// }

@@ -20,32 +20,31 @@ class _QuizScreenState extends State<QuizScreen> {
   (QuestionWidget, AnswerWidget) questionAndAnswerView({
     required Question question,
     required Answer answer,
-    required AppState appState,
   }) {
-    return switch ((question, answer)) {
-      (TextQuestion question, MultipleChoiceAnswer answer) => (
+    return switch (question) {
+      TextQuestion(:MultipleChoiceAnswer answer) => (
           TextQuestionWidget(question: question),
           MultipleChoiceWidget(answer: answer),
         ),
-      (TextQuestion textQuestion, OpenTextAnswer textAnswer) => (
-          TextQuestionWidget(question: textQuestion),
-          TextAnswerWidget(answer: textAnswer),
+      TextQuestion(:OpenTextAnswer answer) => (
+          TextQuestionWidget(question: question),
+          TextAnswerWidget(answer: answer),
         ),
-      (TextQuestion textQuestion, BooleanAnswer boolAnswer) => (
-          TextQuestionWidget(question: textQuestion),
-          BooleanAnswerWidget(answer: boolAnswer),
+      TextQuestion(:BooleanAnswer answer) => (
+          TextQuestionWidget(question: question),
+          BooleanAnswerWidget(answer: answer),
         ),
-      (ImageQuestion imageQuestion, MultipleChoiceAnswer multChoiceAnswer) => (
-          ImageQuestionWidget(question: imageQuestion),
-          MultipleChoiceWidget(answer: multChoiceAnswer),
+      ImageQuestion(:MultipleChoiceAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          MultipleChoiceWidget(answer: answer),
         ),
-      (ImageQuestion imageQuestion, OpenTextAnswer textAnswer) => (
-          ImageQuestionWidget(question: imageQuestion),
-          TextAnswerWidget(answer: textAnswer)
+      ImageQuestion(:OpenTextAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          TextAnswerWidget(answer: answer)
         ),
-      (ImageQuestion imageCollection, BooleanAnswer boolAnswer) => (
-          ImageQuestionWidget(question: imageCollection),
-          BooleanAnswerWidget(answer: boolAnswer),
+      ImageQuestion(:BooleanAnswer answer) => (
+          ImageQuestionWidget(question: question),
+          BooleanAnswerWidget(answer: answer),
         ),
     };
   }
@@ -59,7 +58,6 @@ class _QuizScreenState extends State<QuizScreen> {
         final (question, answer) = questionAndAnswerView(
           question: state.currentQuestion,
           answer: state.currentAnswer,
-          appState: state,
         );
 
         return Padding(
