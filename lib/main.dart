@@ -28,6 +28,10 @@ class AuthGuard extends StatefulWidget {
 }
 
 class _AuthGuardState extends State<AuthGuard> {
+  bool appLoaded = false;
+  Player? _player;
+  Quiz? _quiz;
+
   @override
   initState() {
     loadApp();
@@ -37,8 +41,11 @@ class _AuthGuardState extends State<AuthGuard> {
   void loadApp() async {
     try {
       final userCredential = await FirebaseAuth.instance.signInAnonymously();
-      _player = await FirebaseService.createUser(userCredential);
       _quiz = await FirebaseService.createQuiz();
+      _player = await FirebaseService.createPlayerAndJoinQuiz(
+        userCredential,
+        _quiz!.id,
+      );
     } on FormatException catch (e) {
       print('Format Exception! \n $e');
     } catch (e) {
@@ -48,10 +55,6 @@ class _AuthGuardState extends State<AuthGuard> {
       appLoaded = true;
     });
   }
-
-  bool appLoaded = false;
-  Player? _player;
-  Quiz? _quiz;
 
   @override
   Widget build(BuildContext context) {
@@ -65,23 +68,8 @@ class _AuthGuardState extends State<AuthGuard> {
             return MultiProvider(
               providers: [
                 ChangeNotifierProvider(
-                  create: (_) => AppState(quiz: _quiz!, player: _player!),
+                  create: (_) => AppBloc(quiz: _quiz!, player: _player!),
                 ),
-                StreamProvider<Player>(
-                  create: (_) => FirebaseService.playerStream(_player!),
-                  initialData: _player!,
-                  catchError: (_, error) {
-                    throw Exception('Error in StreamProvider.Player!  $error');
-                  },
-                ),
-                StreamProvider<List<Player>>(
-                  create: (_) => FirebaseService.leaderboardStream(),
-                  initialData: [],
-                  catchError: (_, error) {
-                    throw Exception(
-                        'Error in StreamProvider.Leaderboard!  $error');
-                  },
-                )
               ],
               child: AppShell(),
             );

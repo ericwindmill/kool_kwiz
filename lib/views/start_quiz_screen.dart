@@ -10,7 +10,7 @@ class StartQuizScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
+    final state = context.watch<AppBloc>();
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.center,
@@ -22,7 +22,7 @@ class StartQuizScreen extends StatelessWidget {
         SizedBox(height: Marketplace.spacing4),
         ShowCircles(),
         SizedBox(height: Marketplace.spacing3),
-        if (state.quizReady)
+        if (state.quiz.ready)
           MarketButton(
             onPressed: onStartQuiz,
             text: 'Start Quiz!',

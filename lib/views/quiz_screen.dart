@@ -17,12 +17,27 @@ class QuizScreen extends StatefulWidget {
 }
 
 class _QuizScreenState extends State<QuizScreen> {
-  (QuestionWidget, AnswerWidget) questionAndAnswerView({
+  Widget getQuestionAndAnswerWidgetsDeprecated(Question question) {
+    final answer = question.answer;
+    if (question is TextQuestion && answer is BooleanAnswer) {
+      return Column(
+        children: [TextQuestionWidget(question: question), BooleanAnswerWidget(answer: answer)],
+      );
+    } else if (question is TextQuestion && answer is MultipleChoiceAnswer) {
+      return Column(
+        children: [TextQuestionWidget(question: question), MultipleChoiceWidget(answer: answer)],
+      );
+    } else {
+      return Container();
+    }
+  }
+
+  (QuestionWidget, AnswerWidget) getQuestionAndAnswerWidgets({
     required Question question,
     required Answer answer,
   }) {
     return switch (question) {
-      TextQuestion(:MultipleChoiceAnswer answer) => (
+      TextQuestion(answer: MultipleChoiceAnswer answer) => (
           TextQuestionWidget(question: question),
           MultipleChoiceWidget(answer: answer),
         ),
@@ -51,13 +66,13 @@ class _QuizScreenState extends State<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
+    final state = context.watch<AppBloc>();
     return ListenableBuilder(
       listenable: state,
       builder: (context, child) {
-        final (question, answer) = questionAndAnswerView(
-          question: state.currentQuestion,
-          answer: state.currentAnswer,
+        final (question, answer) = getQuestionAndAnswerWidgets(
+          question: state.quiz.currentQuestion,
+          answer: state.quiz.currentAnswer,
         );
 
         return Padding(
@@ -79,7 +94,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   );
                 },
                 child: Container(
-                  key: Key(state.currentQuestion.id),
+                  key: Key(state.quiz.currentQuestion.id),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [

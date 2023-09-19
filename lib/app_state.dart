@@ -1,49 +1,55 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:koolkwiz/util/name_generator.dart';
 
 import 'firebase_service.dart';
 import 'model/model.dart';
 
-class AppState extends ChangeNotifier {
-  AppState({required this.player, required this.quiz});
+class AppBloc extends ChangeNotifier {
+  AppBloc({required this.player, required this.quiz});
 
   final Player player;
-  Quiz quiz;
-  bool quizComplete = false;
-  bool quizReady = true;
-  int _currentQuestionIdx = 0;
-  Question get currentQuestion => quiz.questionList[_currentQuestionIdx];
-  Answer get currentAnswer => quiz.questionList[_currentQuestionIdx].answer;
+  Stream<Player> playerStream() => FirebaseService.playerStream(
+        player,
+        quiz.id,
+      );
 
-  bool validateAnswer(String value) {
-    final isCorrect = value == currentAnswer.correctAnswer;
-    if (isCorrect) FirebaseService.incrementScore(player);
-    return isCorrect;
+  final Quiz quiz;
+  Stream<Quiz> quizStream() => FirebaseService.quizStream(quiz.id);
+
+  Future<void> startQuiz() async {
+    FirebaseService.updateQuizStatus(
+      quizId: quiz.id,
+      status: 'in progress',
+    );
+  }
+
+  Future<void> validateAnswer(String value) async {
+    final isCorrect = value == quiz.currentAnswer.correctAnswer;
+    if (isCorrect) {
+      player.incrementScore();
+      await FirebaseService.updatePlayer(player, quiz.id);
+    }
   }
 
   void nextQuestion() {
-    if (_currentQuestionIdx + 1 == quiz.length) {
-      quizComplete = true;
+    if (quiz.currentQuestionIdx + 1 == quiz.length) {
       completeQuiz();
     } else {
-      _currentQuestionIdx++;
+      quiz.currentQuestionIdx++;
     }
     notifyListeners();
   }
 
   completeQuiz() async {
-    player.updateLeaderboardStats();
-    await FirebaseService.updateUserLeaderboardStats(player);
+    await FirebaseService.updateQuizStatus(status: 'complete', quizId: quiz.id);
+    // TODO: leaderboard stuff
     notifyListeners();
   }
 
   resetQuiz() async {
-    quizReady = false;
-    notifyListeners();
-    _currentQuestionIdx = 0;
-    quizComplete = false;
-    await FirebaseService.resetCurrentScore(player);
-    quiz = await FirebaseService.createQuiz();
-    quizReady = true;
+    // TODO: do other shit
+    await FirebaseService.updateQuizStatus(quizId: quiz.id, status: 'created');
     notifyListeners();
   }
 }

@@ -3,10 +3,8 @@ import 'package:provider/provider.dart';
 
 import 'app_state.dart';
 import 'marketplace/marketplace.dart';
-import 'model/model.dart';
 import 'views/quiz_screen.dart';
 import 'views/start_quiz_screen.dart';
-import 'views/leaderboard_screen.dart';
 
 // This Widget is basically the router.
 class AppShell extends StatefulWidget {
@@ -23,8 +21,7 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
-    final player = context.watch<Player>();
+    final state = context.watch<AppBloc>();
 
     return Scaffold(
       appBar: AppBar(
@@ -34,10 +31,10 @@ class _AppShellState extends State<AppShell> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Player: ${player.name}',
+              'Player: ${state.player.name}',
               style: Marketplace.label,
             ),
-            Text('Score: ${player.currentScore}')
+            Text('Score: ${state.player.currentScore}')
           ],
         ),
       ),
@@ -47,20 +44,23 @@ class _AppShellState extends State<AppShell> {
             // initial welcome screen
             if (!_hasStartedQuiz) {
               return StartQuizScreen(
-                onStartQuiz: () => setState(() {
-                  _hasStartedQuiz = true;
-                }),
+                onStartQuiz: () {
+                  setState(() {
+                    _hasStartedQuiz = true;
+                  });
+                },
               );
             }
 
             // Show the Leaderboard screen
-            if (state.quizComplete) {
-              return LeaderboardScreen(onReset: () {
-                state.resetQuiz();
-                setState(() {
-                  _hasStartedQuiz = false;
-                });
-              });
+            if (state.quiz.status == 'complete') {
+              // todo: return ResultsScreen();
+              // return LeaderboardScreen(onReset: () {
+              //   state.resetQuiz();
+              //   setState(() {
+              //     _hasStartedQuiz = false;
+              //   });
+              // });
             }
 
             return QuizScreen();

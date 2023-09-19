@@ -20,17 +20,14 @@ class MultipleChoiceAnswerButton extends StatefulWidget {
   final bool isActive;
 
   @override
-  State<MultipleChoiceAnswerButton> createState() =>
-      _MultipleChoiceAnswerButtonState();
+  State<MultipleChoiceAnswerButton> createState() => _MultipleChoiceAnswerButtonState();
 }
 
-class _MultipleChoiceAnswerButtonState
-    extends State<MultipleChoiceAnswerButton> {
+class _MultipleChoiceAnswerButtonState extends State<MultipleChoiceAnswerButton> {
   bool isPressed = false;
   bool isHovered = false;
   final Color pressedColor = Marketplace.theme.colorScheme.primary;
-  final Color hoveredColor =
-      Marketplace.theme.colorScheme.primary.withOpacity(.5);
+  final Color hoveredColor = Marketplace.theme.colorScheme.primary.withOpacity(.5);
   final Color initialColor = Marketplace.theme.colorScheme.onPrimary;
   final Color inactiveColor = Marketplace.inactiveButton;
   final Color correctAnswerColor = Marketplace.correctChoiceColor;
@@ -116,16 +113,4 @@ class _MultipleChoiceAnswerButtonState
       ),
     );
   }
-}
-
-bool buttonColor(Question question) {
-  bool isHovered = false;
-  bool isPressed = false;
-  bool isActive = true;
-
-  var record = (question, isHovered, isPressed, isActive);
-
-  return switch (record) {
-    ((TextQuestion _ || ImageQuestion _), true, false, _) => true,
-  };
 }

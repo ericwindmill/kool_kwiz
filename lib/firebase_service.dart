@@ -5,122 +5,194 @@ import 'package:koolkwiz/util/name_generator.dart';
 import 'model/model.dart';
 
 class FirebaseService {
-  static Stream<Player> playerStream(Player player) {
+  ///
+  /// Region: Player
+  ///
+  static Stream<Player> playerStream(Player player, String quizId) {
     return FirebaseFirestore.instance
-        .doc('users/${player.id}')
+        .doc('quizzes/$quizId/users/${player.id}')
         .snapshots()
         .map((snapshot) => Player.fromJson(snapshot.data()!));
   }
 
-  // All users that have completed at least one quiz
-  static Stream<List<Player>> leaderboardStream() {
-    return FirebaseFirestore.instance
-        .collection('users')
-        .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
-        .limit(30)
-        .snapshots()
-        .map((event) {
-      var players = event.docs
-          .map((snapshot) => Player.fromJson(snapshot.data()))
-          .toList();
-      players.sort((a, b) => b.leaderboardStats.cumulativeScore
-          .compareTo(a.leaderboardStats.cumulativeScore));
+  static Future<Player> createPlayerAndJoinQuiz(
+    UserCredential userCredential,
+    String quizId,
+  ) async {
+    final player = await FirebaseService.getPlayerFromFirestore(
+      userCredential,
+      quizId,
+    );
+    if (player != null) {
+      return player;
+    } else {
+      Player player;
+      if (true) {
+        // TODO. determine if I made this quiz
+        player = Player(
+          id: userCredential.user!.uid,
+          name: generateRandomPlayerName(),
+          currentScore: 0,
+          isAdmin: true,
+        );
+      } else {
+        player = Player(
+          id: userCredential.user!.uid,
+          name: generateRandomPlayerName(),
+          currentScore: 0,
+          isAdmin: false,
+        );
+      }
+      await FirebaseFirestore.instance
+          .collection('quizzes/$quizId/players')
+          .add(player.toJson());
+      return player;
+    }
+  }
 
-      return players;
+  static Future<bool> playerExists(
+      UserCredential userCredential, String quizId) async {
+    final existingPlayerDoc = await FirebaseFirestore.instance
+        .doc('quizzes/$quizId/users/${userCredential.user!.uid}')
+        .get();
+
+    return existingPlayerDoc.exists;
+  }
+
+  static Future<Player?> getPlayerFromFirestore(
+    UserCredential userCredential,
+    String quizId,
+  ) async {
+    final playerDoesExist = await playerExists(userCredential, quizId);
+
+    // If user exists, this isn't their first time opening the app
+    if (playerDoesExist) {
+      final docSnapshot = await FirebaseFirestore.instance
+          .doc('quizzes/$quizId/users/${userCredential.user!.uid}')
+          .get();
+      final data = docSnapshot.data()!;
+      return Player(
+        id: docSnapshot.id,
+        name: data['name'] as String,
+        currentScore: data['currentScore'] as int,
+        isAdmin: data['isAdmin'] as bool,
+      );
+    } else {
+      return null;
+    }
+  }
+
+  static Future<void> updatePlayer(Player player, String quizId) async {
+    await FirebaseFirestore.instance
+        .doc('quizzes/$quizId/users/${player.id}')
+        .set({
+      'name': player.name,
+      'id': player.id,
+      'score': player.currentScore,
+      'isAdmin': player.isAdmin,
     });
   }
 
-  static Future<Player> createUser(UserCredential userCredential) async {
-    final existingPlayerDoc = await FirebaseFirestore.instance
-        .doc('users/${userCredential.user!.uid}')
-        .get();
+  ///
+  /// Region: Questions
+  ///
 
-    Player player;
-
-    // If user exists, this isn't their first time opening the app, return early so we don't overwrite the score
-    if (existingPlayerDoc.exists) {
-      final data = existingPlayerDoc.data()!;
-      player = Player(
-        id: existingPlayerDoc.id,
-        name: data['name'] as String,
-        currentScore: 0,
-        leaderboardStats: LeaderboardStats(
-          highestScore: data['leaderboardStats']['highestScore'] as int,
-          date: (data['leaderboardStats']['date'] as Timestamp).toDate(),
-          cumulativeScore: data['leaderboardStats']['cumulativeScore'] as int,
-        ),
-      );
-    } else {
-      // The document doesn't exist, so this is the first time they're opening the app
-      // Create a username and add them to Firestore
-      player = Player(
-        id: userCredential.user!.uid,
-        name: generateRandomPlayerName(),
-        leaderboardStats: LeaderboardStats(
-          date: DateTime.now(),
-        ),
-      );
-
-// Create user in Firestore, in order to track score
-      await FirebaseFirestore.instance.doc('users/${player.id}').set({
-        'name': player.name,
-        'id': player.id,
-        'score': player.currentScore,
-        'leaderboardStats': {
-          'highestScore': player.leaderboardStats.highestScore,
-          'date': player.leaderboardStats.date,
-          'cumulativeScore': player.leaderboardStats.cumulativeScore,
-        },
-      });
-    }
-
-    return player;
+  static Stream<Quiz> quizStream(String quizId) {
+    return FirebaseFirestore.instance
+        .doc('quizzes/users/$quizId')
+        .snapshots()
+        .map((snapshot) => Quiz.fromFirestore(snapshot.data()!));
   }
 
-  static Future<QuerySnapshot> getAllQuestions() =>
-      FirebaseFirestore.instance.collection('questions').get();
+  static Future<QuerySnapshot> _getQuestionsForQuiz({required int length}) =>
+      FirebaseFirestore.instance.collection('questions').limit(length).get();
 
   static Future<Quiz> createQuiz() async {
-    return await FirebaseService.getAllQuestions().then((QuerySnapshot value) {
-      final questions = value.docs.map((doc) {
-        final data = doc.data();
-        if (data
-            case <String, dynamic>{
-              'type': 'textQuestion' || 'imageQuestion',
-              'category': String _,
-              'answer': _,
-            }) {
+    const len = 10;
+    final createQuizData = {
+      'currentQuestionId': 0,
+      'status': 'created',
+      'length': len,
+    };
+
+    final quizFirestoreData = await FirebaseFirestore.instance
+        .collection('quizzes')
+        .add(createQuizData);
+
+    final List<Question> questions =
+        await FirebaseService._getQuestionsForQuiz(length: len)
+            .then((QuerySnapshot value) {
+      return value.docs.map((doc) {
+        try {
           return Question.fromFirestore(doc);
-        } else {
+        } catch (e) {
           throw FormatException(
-            'Incoming Firestore Question data is malformed',
+            'Incoming Firestore Question data is malformed! \n $e',
           );
         }
       }).toList();
-
-      final quiz = Quiz(questionList: []);
-      questions.shuffle();
-      final questionsForQuizLength = questions.take(quiz.length).toList();
-      quiz.addQuestions(questionsForQuizLength);
-      return quiz;
     });
+
+    // The firstQuestion in the quiz is hardcoded
+    // It's just for goofs in the talk, don't worry about it
+    final firstQuestionDoc =
+        await FirebaseFirestore.instance.doc("bootstrap/starterQuestion").get();
+    final data = firstQuestionDoc.data()!;
+    final firstQuestion = TextQuestion(
+      questionBody: data['questionBody'] as String,
+      category: data['category'] as String,
+      answer: Answer.fromJson(data['answer'] as Map<String, dynamic>),
+      id: firstQuestionDoc.id,
+    );
+
+    questions.shuffle();
+    questions.insert(0, firstQuestion);
+
+    final quiz = Quiz(
+      id: quizFirestoreData.id,
+      questions: questions,
+      status: "created",
+      length: len,
+    );
+    return quiz;
   }
 
-  static void incrementScore(Player player) async {
-    player.currentScore++;
-    final json = player.toJson();
-    FirebaseFirestore.instance.doc('users/${player.id}').update(json);
+  static Future<void> updateQuizStatus({
+    required String quizId,
+    required String status,
+  }) async {
+    await FirebaseFirestore.instance
+        .doc("quizzes/$quizId}")
+        .update({status: status});
   }
 
-  static Future<void> resetCurrentScore(Player player) async {
-    player.currentScore = 0;
-    final json = player.toJson();
-    FirebaseFirestore.instance.doc('users/${player.id}').update(json);
-  }
+  // static Future<void> resetCurrentScore(Player player) async {
+  //   player.currentScore = 0;
+  //   final json = player.toJson();
+  //   FirebaseFirestore.instance.doc('users/${player.id}').update(json);
+  // }
 
-  static Future<void> updateUserLeaderboardStats(Player player) async {
-    FirebaseFirestore.instance
-        .doc('users/${player.id}')
-        .update(player.toJson());
-  }
+  // static Future<void> updateUserLeaderboardStats(Player player) async {
+  //   FirebaseFirestore.instance
+  //       .doc('users/${player.id}')
+  //       .update(player.toJson());
+  // }
+
+// // All users that have completed at least one quiz
+// static Stream<List<Player>> leaderboardStream() {
+//   return FirebaseFirestore.instance
+//       .collection('users')
+//       .where('leaderboardStats.cumulativeScore', isNotEqualTo: 0)
+//       .limit(30)
+//       .snapshots()
+//       .map((event) {
+//     var players = event.docs
+//         .map((snapshot) => Player.fromJson(snapshot.data()))
+//         .toList();
+//     players.sort((a, b) => b.leaderboardStats.cumulativeScore
+//         .compareTo(a.leaderboardStats.cumulativeScore));
+//
+//     return players;
+//   });
+// }
 }

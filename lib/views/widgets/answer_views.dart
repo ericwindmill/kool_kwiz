@@ -32,7 +32,7 @@ class _MultipleChoiceAnswerViewState extends State<MultipleChoiceWidget> {
   // button state before an answer is selected
   bool _isActive = true;
 
-  List<Widget> _buildButtons(AppState state) {
+  List<Widget> _buildButtons(AppBloc state) {
     final answers = widget.answer.answerOptions;
     return answers.map((String answerOption) {
       final bool isCorrectAnswer = widget.answer.correctAnswer == answerOption;
@@ -59,7 +59,7 @@ class _MultipleChoiceAnswerViewState extends State<MultipleChoiceWidget> {
 
   @override
   Widget build(BuildContext context) {
-    var state = context.watch<AppState>();
+    var state = context.watch<AppBloc>();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -85,7 +85,7 @@ class _OpenTextAnswerViewState extends State<TextAnswerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
+    final state = context.watch<AppBloc>();
     return Column(
       children: [
         MarketTextField(
@@ -122,7 +122,7 @@ class _BooleanAnswerViewState extends State<BooleanAnswerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<AppState>();
+    final state = context.watch<AppBloc>();
 
     return Padding(
       padding: EdgeInsets.all(Marketplace.spacing2),
