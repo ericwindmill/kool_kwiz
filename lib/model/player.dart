@@ -6,10 +6,6 @@ class Player {
   int currentScore;
   final bool isAdmin;
 
-  void incrementScore() {
-    currentScore += 1;
-  }
-
   Player({
     required this.id,
     required this.name,

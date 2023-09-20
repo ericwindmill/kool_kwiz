@@ -40,12 +40,15 @@ class _AuthGuardState extends State<AuthGuard> {
 
   void loadApp() async {
     try {
-      final userCredential = await FirebaseAuth.instance.signInAnonymously();
       _quiz = await FirebaseService.createQuiz();
-      _player = await FirebaseService.createPlayerAndJoinQuiz(
-        userCredential,
-        _quiz!.id,
-      );
+      _player = await FirebaseAuth.instance
+          .signInAnonymously()
+          .then((credential) async {
+        return await FirebaseService.createPlayerAndJoinQuiz(
+          credential,
+          _quiz!.id,
+        );
+      });
     } on FormatException catch (e) {
       print('Format Exception! \n $e');
     } catch (e) {
@@ -64,11 +67,22 @@ class _AuthGuardState extends State<AuthGuard> {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          if (snapshot.hasData && appLoaded) {
+          if (snapshot.data != null && appLoaded) {
             return MultiProvider(
               providers: [
                 ChangeNotifierProvider(
                   create: (_) => AppBloc(quiz: _quiz!, player: _player!),
+                ),
+                StreamProvider<Player>(
+                  create: (_) => FirebaseService.playerStream(
+                      player: _player!, quizId: _quiz!.id),
+                  initialData: _player!,
+                  catchError: (_, error) => throw (error!),
+                ),
+                StreamProvider<Quiz>(
+                  create: (_) => FirebaseService.quizStream(quizId: _quiz!.id),
+                  initialData: _quiz!,
+                  catchError: (_, error) => throw (error!),
                 ),
               ],
               child: AppShell(),

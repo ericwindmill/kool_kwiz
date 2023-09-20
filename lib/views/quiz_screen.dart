@@ -21,11 +21,17 @@ class _QuizScreenState extends State<QuizScreen> {
     final answer = question.answer;
     if (question is TextQuestion && answer is BooleanAnswer) {
       return Column(
-        children: [TextQuestionWidget(question: question), BooleanAnswerWidget(answer: answer)],
+        children: [
+          TextQuestionWidget(question: question),
+          BooleanAnswerWidget(answer: answer)
+        ],
       );
     } else if (question is TextQuestion && answer is MultipleChoiceAnswer) {
       return Column(
-        children: [TextQuestionWidget(question: question), MultipleChoiceWidget(answer: answer)],
+        children: [
+          TextQuestionWidget(question: question),
+          MultipleChoiceWidget(answer: answer)
+        ],
       );
     } else {
       return Container();
@@ -34,7 +40,6 @@ class _QuizScreenState extends State<QuizScreen> {
 
   (QuestionWidget, AnswerWidget) getQuestionAndAnswerWidgets({
     required Question question,
-    required Answer answer,
   }) {
     return switch (question) {
       TextQuestion(answer: MultipleChoiceAnswer answer) => (
@@ -67,52 +72,45 @@ class _QuizScreenState extends State<QuizScreen> {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppBloc>();
-    return ListenableBuilder(
-      listenable: state,
-      builder: (context, child) {
-        final (question, answer) = getQuestionAndAnswerWidgets(
-          question: state.quiz.currentQuestion,
-          answer: state.quiz.currentAnswer,
-        );
-
-        return Padding(
-          padding: EdgeInsets.all(Marketplace.spacing4),
-          child: ScrollColumnExpandable(
-            children: [
-              PageTransitionSwitcher(
-                duration: Duration(milliseconds: 600),
-                transitionBuilder: (
-                  child,
-                  animation,
-                  secondaryAnimation,
-                ) {
-                  return SharedAxisTransition(
-                    animation: animation,
-                    secondaryAnimation: secondaryAnimation,
-                    transitionType: SharedAxisTransitionType.horizontal,
-                    child: child,
-                  );
-                },
-                child: Container(
-                  key: Key(state.quiz.currentQuestion.id),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      question,
-                      answer,
-                    ],
-                  ),
-                ),
+    final quiz = context.watch<Quiz>();
+    final (question, answer) =
+        getQuestionAndAnswerWidgets(question: quiz.currentQuestion);
+    return Padding(
+      padding: EdgeInsets.all(Marketplace.spacing4),
+      child: ScrollColumnExpandable(
+        children: [
+          PageTransitionSwitcher(
+            duration: Duration(milliseconds: 600),
+            transitionBuilder: (
+              child,
+              animation,
+              secondaryAnimation,
+            ) {
+              return SharedAxisTransition(
+                animation: animation,
+                secondaryAnimation: secondaryAnimation,
+                transitionType: SharedAxisTransitionType.horizontal,
+                child: child,
+              );
+            },
+            child: Container(
+              key: Key(quiz.currentQuestion.id),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  question,
+                  answer,
+                ],
               ),
-              SizedBox(height: Marketplace.spacing4),
-              MarketButton(
-                text: 'Next Question',
-                onPressed: () => state.nextQuestion(),
-              )
-            ],
+            ),
           ),
-        );
-      },
+          SizedBox(height: Marketplace.spacing4),
+          MarketButton(
+            text: 'Next Question',
+            onPressed: () => state.nextQuestion(),
+          )
+        ],
+      ),
     );
   }
 }

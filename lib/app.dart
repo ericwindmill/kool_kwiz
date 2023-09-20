@@ -1,8 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'app_state.dart';
+import 'marketplace/components/colored_dot_loading_indicator.dart';
 import 'marketplace/marketplace.dart';
+import 'model/model.dart';
 import 'views/quiz_screen.dart';
 import 'views/start_quiz_screen.dart';
 
@@ -17,11 +20,11 @@ class AppShell extends StatefulWidget {
 }
 
 class _AppShellState extends State<AppShell> {
-  bool _hasStartedQuiz = false;
-
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppBloc>();
+    final player = context.watch<Player>();
+    final quiz = context.watch<Quiz>();
 
     return Scaffold(
       appBar: AppBar(
@@ -31,10 +34,13 @@ class _AppShellState extends State<AppShell> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'Player: ${state.player.name}',
+              'Player: ${player.name ?? 'loading'} ',
               style: Marketplace.label,
             ),
-            Text('Score: ${state.player.currentScore}')
+            Text(
+              'Score: ${player.currentScore ?? 'loading'}',
+              style: Marketplace.label,
+            )
           ],
         ),
       ),
@@ -42,28 +48,15 @@ class _AppShellState extends State<AppShell> {
         child: Builder(
           builder: (context) {
             // initial welcome screen
-            if (!_hasStartedQuiz) {
-              return StartQuizScreen(
-                onStartQuiz: () {
-                  setState(() {
-                    _hasStartedQuiz = true;
-                  });
-                },
-              );
-            }
-
-            // Show the Leaderboard screen
-            if (state.quiz.status == 'complete') {
-              // todo: return ResultsScreen();
-              // return LeaderboardScreen(onReset: () {
-              //   state.resetQuiz();
-              //   setState(() {
-              //     _hasStartedQuiz = false;
-              //   });
-              // });
-            }
-
-            return QuizScreen();
+            return switch (quiz.status) {
+              QuizStatus.ready => StartQuizScreen(
+                  onStartQuiz: () => state.startQuiz(),
+                ),
+              QuizStatus.inProgress => QuizScreen(),
+              QuizStatus.complete => Center(
+                  child: Text('AppWidget.Quiz Status == Complete'),
+                ) // TODO
+            };
           },
         ),
       ),

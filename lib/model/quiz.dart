@@ -1,11 +1,15 @@
+import 'dart:collection';
+
 import 'package:flutter/foundation.dart';
 import 'model.dart';
+
+enum QuizStatus { ready, inProgress, complete }
 
 class Quiz extends ChangeNotifier {
   Quiz({
     required this.id,
     required this.questions,
-    this.status = "created",
+    this.status = QuizStatus.ready,
     this.currentQuestionIdx = 0,
     this.length = 5,
   });
@@ -14,7 +18,7 @@ class Quiz extends ChangeNotifier {
   final String id;
 
   /// Either "created", "in progress", or "complete"
-  String status;
+  QuizStatus status;
 
   /// The id of the question that is currently on screen
   int currentQuestionIdx;
@@ -28,11 +32,11 @@ class Quiz extends ChangeNotifier {
 
   Answer get currentAnswer => questions[currentQuestionIdx].answer;
 
-  bool get ready => status == 'created';
+  bool get ready => status == QuizStatus.ready;
 
-  bool get inProgress => status == 'in progress';
+  bool get inProgress => status == QuizStatus.inProgress;
 
-  bool get completed => status == 'completed';
+  bool get completed => status == QuizStatus.complete;
 
   factory Quiz.fromFirestore(Map<String, dynamic> json) {
     if (json
@@ -41,17 +45,31 @@ class Quiz extends ChangeNotifier {
           'status': String status,
           'currentQuestionIdx': int currentQuestionIdx,
           'length': int length,
-          'questions': Iterable<Map<String, dynamic>> questions,
+          'questions': List<Object?> questions,
         }) {
       return Quiz(
         id: id,
-        status: status,
+        status: QuizStatus.values.firstWhere(
+          (element) => element.name == status,
+        ),
         currentQuestionIdx: currentQuestionIdx,
         length: length,
-        questions: questions.map((q) => Question.fromJson(q)).toList(),
+        questions: questions.map((q) {
+          return Question.fromJson(q as Map<String, dynamic>);
+        }).toList(),
       );
     } else {
       throw FormatException("Malformed Quiz data from Firestore");
     }
+  }
+
+  Map<String, dynamic> toFirestore() {
+    return {
+      'id': id,
+      'status': status.name,
+      'currentQuestionIdx': currentQuestionIdx,
+      'length': length,
+      'questions': questions.map((q) => Question.toJson(q)),
+    };
   }
 }

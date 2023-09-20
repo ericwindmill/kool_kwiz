@@ -51,6 +51,25 @@ sealed class Question {
     json['id'] = id;
     return Question.fromJson(json);
   }
+
+  static Map<String, dynamic> toJson(Question question) {
+    return switch (question) {
+      TextQuestion textQuestion => {
+          'type': 'textQuestion',
+          'category': textQuestion.category,
+          'answer': Answer.toJson(textQuestion.answer),
+          'questionBody': textQuestion.questionBody,
+          'id': textQuestion.id,
+        },
+      ImageQuestion imageQuestion => {
+          'type': 'imageQuestion',
+          'category': imageQuestion.category,
+          'answer': Answer.toJson(imageQuestion.answer),
+          'imagePath': imageQuestion.imagePath,
+          'id': imageQuestion.id,
+        },
+    };
+  }
 }
 
 class TextQuestion extends Question {

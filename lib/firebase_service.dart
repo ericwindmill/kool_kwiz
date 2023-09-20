@@ -8,7 +8,10 @@ class FirebaseService {
   ///
   /// Region: Player
   ///
-  static Stream<Player> playerStream(Player player, String quizId) {
+  static Stream<Player> playerStream({
+    required Player player,
+    required String quizId,
+  }) {
     return FirebaseFirestore.instance
         .doc('quizzes/$quizId/users/${player.id}')
         .snapshots()
@@ -27,25 +30,18 @@ class FirebaseService {
       return player;
     } else {
       Player player;
-      if (true) {
-        // TODO. determine if I made this quiz
-        player = Player(
-          id: userCredential.user!.uid,
-          name: generateRandomPlayerName(),
-          currentScore: 0,
-          isAdmin: true,
-        );
-      } else {
-        player = Player(
-          id: userCredential.user!.uid,
-          name: generateRandomPlayerName(),
-          currentScore: 0,
-          isAdmin: false,
-        );
-      }
+
+      // TODO. determine if I made this quiz
+      player = Player(
+        id: userCredential.user!.uid,
+        name: generateRandomPlayerName(),
+        currentScore: 0,
+        isAdmin: true,
+      );
+
       await FirebaseFirestore.instance
-          .collection('quizzes/$quizId/players')
-          .add(player.toJson());
+          .doc('quizzes/$quizId/players/${userCredential.user!.uid}')
+          .set(player.toJson());
       return player;
     }
   }
@@ -88,7 +84,7 @@ class FirebaseService {
         .set({
       'name': player.name,
       'id': player.id,
-      'score': player.currentScore,
+      'currentScore': player.currentScore,
       'isAdmin': player.isAdmin,
     });
   }
@@ -97,27 +93,48 @@ class FirebaseService {
   /// Region: Questions
   ///
 
-  static Stream<Quiz> quizStream(String quizId) {
+  static Stream<Quiz> quizStream({required String quizId}) {
     return FirebaseFirestore.instance
-        .doc('quizzes/users/$quizId')
+        .doc('quizzes/$quizId')
         .snapshots()
         .map((snapshot) => Quiz.fromFirestore(snapshot.data()!));
   }
+
+  // static Stream<Question> currentQuestion({required String quizId}) {
+  //   return FirebaseFirestore.instance
+  //       .doc('quizzes/$quizId')
+  //       .snapshots()
+  //       .map((quizSnapshot) {
+  //     final quiz = Quiz.fromFirestore(quizSnapshot.data()!);
+  //     return quiz.currentQuestion;
+  //   });
+  // }
+
+  // static Stream<Answer> currentAnswer({required String quizId}) {
+  //   return FirebaseFirestore.instance
+  //       .doc('quizzes/$quizId')
+  //       .snapshots()
+  //       .map((quizSnapshot) {
+  //     final quiz = Quiz.fromFirestore(quizSnapshot.data()!);
+  //     return quiz.currentAnswer;
+  //   });
+  // }
+
+  // static Stream<QuizStatus> quizStatus({required String quizId}) {
+  //   return FirebaseFirestore.instance
+  //       .doc('quizzes/$quizId')
+  //       .snapshots()
+  //       .map((quizSnapshot) {
+  //     final quiz = Quiz.fromFirestore(quizSnapshot.data()!);
+  //     return quiz.status;
+  //   });
+  // }
 
   static Future<QuerySnapshot> _getQuestionsForQuiz({required int length}) =>
       FirebaseFirestore.instance.collection('questions').limit(length).get();
 
   static Future<Quiz> createQuiz() async {
     const len = 10;
-    final createQuizData = {
-      'currentQuestionId': 0,
-      'status': 'created',
-      'length': len,
-    };
-
-    final quizFirestoreData = await FirebaseFirestore.instance
-        .collection('quizzes')
-        .add(createQuizData);
 
     final List<Question> questions =
         await FirebaseService._getQuestionsForQuiz(length: len)
@@ -148,22 +165,27 @@ class FirebaseService {
     questions.shuffle();
     questions.insert(0, firstQuestion);
 
+    final quizDoc = FirebaseFirestore.instance.collection('quizzes').doc();
     final quiz = Quiz(
-      id: quizFirestoreData.id,
+      id: quizDoc.id,
       questions: questions,
-      status: "created",
+      status: QuizStatus.ready,
       length: len,
+      currentQuestionIdx: 0,
     );
+
+    await quizDoc.set(quiz.toFirestore());
     return quiz;
   }
 
   static Future<void> updateQuizStatus({
     required String quizId,
-    required String status,
+    required QuizStatus status,
   }) async {
     await FirebaseFirestore.instance
-        .doc("quizzes/$quizId}")
-        .update({status: status});
+        .collection("quizzes")
+        .doc(quizId)
+        .update({"status": status.name});
   }
 
   // static Future<void> resetCurrentScore(Player player) async {
